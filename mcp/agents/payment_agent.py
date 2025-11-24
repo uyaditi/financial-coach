@@ -1,5 +1,5 @@
-from app.mcp.agents.base_agent import BaseAgent
-from app.mcp.tools.payment_tools import execute_payment
+from mcp.agents.base_agent import BaseAgent
+from mcp.tools.payment_tools import execute_payment
 
 
 class PaymentAgent(BaseAgent):

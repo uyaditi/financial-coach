@@ -3,7 +3,7 @@ from mcp.tools.budget_tools import (
     get_budgets,
     update_budget_spend
 )
-from app.mcp.agents.base_agent import BaseAgent
+from mcp.agents.base_agent import BaseAgent
 
 class BudgetAgent(BaseAgent):
     def __init__(self):

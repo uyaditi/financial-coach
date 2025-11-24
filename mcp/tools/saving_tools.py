@@ -6,9 +6,9 @@ import asyncio
 # For example, in FastAPI you'd have a dependency that yields AsyncSession.
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.services.savings_service import SavingsService
-from app.models import Savings as SavingsModel  # adjust path
-from app.core.database import get_async_session  # adapt to your project
+from services.savings_service import SavingsService
+from models import Savings as SavingsModel  # adjust path
+from config.database import get_async_session  # adapt to your project
 
 savings_service = SavingsService()
 

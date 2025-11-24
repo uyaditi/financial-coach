@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, Float, String, ForeignKey
 from sqlalchemy.orm import relationship
-from app.config.database import Base
+from config.database import Base
 # from app.models.users import User
 
 class Budget(Base):

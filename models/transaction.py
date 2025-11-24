@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, Float, String, ForeignKey, DateTime, Boolean
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
-from app.config.database import Base
+from config.database import Base
 
 class Transaction(Base):
     __tablename__ = "transactions"

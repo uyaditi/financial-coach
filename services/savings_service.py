@@ -3,8 +3,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update, delete
 from sqlalchemy.exc import NoResultFound
 
-from app.config.database import Savings  # adjust import path if needed
-from app.models.savings import Savings as SavingsModel
+from config.database import Savings  # adjust import path if needed
+from models.savings import Savings as SavingsModel
 
 
 class SavingsService: 

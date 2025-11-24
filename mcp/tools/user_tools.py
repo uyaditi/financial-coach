@@ -1,6 +1,6 @@
 from langgraph.prebuilt import Tool
-from app.config.database import SessionLocal
-from app.models.users import User
+from config.database import SessionLocal
+from models.users import User
 
 
 def get_user_fn(user_id: int):

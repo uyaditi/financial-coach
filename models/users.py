@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, DateTime, func
 from sqlalchemy.orm import relationship
-from app.config.database import Base
+from config.database import Base
 # from app.models.account import Account
 # from app.models.budget import Budget
 # from app.models.transaction import Transaction

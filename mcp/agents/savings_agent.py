@@ -1,7 +1,7 @@
 # app/agents/savings_agent.py
 from typing import Any, Dict, Optional
-from app.mcp.agents.base_agent import BaseAgent  # your lightweight BaseAgent
-from app.mcp.tools import savings_tools  # adjust import path
+from mcp.agents.base_agent import BaseAgent  # your lightweight BaseAgent
+from mcp.tools import savings_tools  # adjust import path
 
 # Path to an uploaded file in this conversation (will be transformed to URL by infra).
 # Provided here as a constant in case the agent/tool needs to reference it.

@@ -1,5 +1,5 @@
-from app.config.database import SessionLocal
-from app.models.budget import Budget
+from config.database import SessionLocal
+from models.budget import Budget
 
 # functions for budget
 def create_budget(user_id: int, category: str, limit: float, period: str = "monthly"):

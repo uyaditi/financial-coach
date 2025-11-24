@@ -1,6 +1,6 @@
 from langgraph.prebuilt import Tool
-from app.config.database import SessionLocal
-from app.models.transaction import Transaction
+from config.database import SessionLocal
+from models.transaction import Transaction
 
 
 def create_transaction_fn(
