@@ -1,3 +1,8 @@
+from config.database import Base, engine
+import models 
+
+Base.metadata.create_all(bind=engine)
+
 from graph.graph_builder import build_graph
 
 workflow = build_graph()

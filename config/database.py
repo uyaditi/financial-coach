@@ -2,11 +2,6 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 import os
 from dotenv import load_dotenv
-from models.users import User
-from models.budget import Budget
-from models.account import Account
-from models.transaction import Transaction
-
 
 load_dotenv() 
 
