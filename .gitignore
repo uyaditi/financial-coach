@@ -1,0 +1,4 @@
+env/
+.vs/
+.env
+__pycache__
