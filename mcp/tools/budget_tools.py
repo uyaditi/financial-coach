@@ -1,16 +1,17 @@
 from config.database import SessionLocal
 from models.budget import Budget
+from datetime import datetime
 
 # functions for budget
-def create_budget(user_id: int, category: str, limit: float, period: str = "monthly"):
-    print("[DEBUG] create_budget:", user_id, category, limit, period)
+def create_budget(user_id: int, category: str, max_limit: float, time_period: str = datetime.now().strftime("%Y-%m")):
+    print("[DEBUG] create_budget:", user_id, category, max_limit, time_period)
     db = SessionLocal()
     try:
         budget = Budget(
             user_id=user_id,
             category=category,
-            limit=limit,
-            period=period
+            max_limit=max_limit,
+            time_period=time_period
         )
         db.add(budget)
         db.commit()
@@ -25,7 +26,7 @@ def create_budget(user_id: int, category: str, limit: float, period: str = "mont
         db.close()
 
 
-def get_budgets(user_id: int):
+def get_budgets(user_id: int = 1):
     db = SessionLocal()
     try:
         budgets = db.query(Budget).filter(Budget.user_id == user_id).all()
@@ -33,9 +34,8 @@ def get_budgets(user_id: int):
             {
                 "id": b.id,
                 "category": b.category,
-                "limit": b.limit,
-                "current_spend": b.current_spend,
-                "period": b.period
+                "max_limit": b.max_limit,
+                "time_period": b.time_period
             }
             for b in budgets
         ]
@@ -43,16 +43,20 @@ def get_budgets(user_id: int):
         db.close()
 
 
-def update_budget_spend(budget_id: int, amount: float):
+def update_budget_spend(category: str, amount: float):
     db = SessionLocal()
     try:
-        budget = db.query(Budget).filter(Budget.id == budget_id).first()
+        budget = db.query(Budget).filter(
+            Budget.user_id == 1,
+            Budget.category == category, 
+            Budget.time_period == datetime.now().strftime("%Y-%m")
+        ).first()
         if not budget:
             return {"status": "error", "message": "Budget not found"}
 
-        budget.current_spend += amount
+        budget.max_limit = amount
         db.commit()
-        return {"status": "success", "new_spend": budget.current_spend}
+        return {"status": "success", "new_spend": budget.max_limit}
     except Exception as e:
         db.rollback()
         return {"status": "error", "message": str(e)}

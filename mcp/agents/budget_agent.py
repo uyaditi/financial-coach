@@ -4,6 +4,7 @@ from mcp.tools.budget_tools import (
     update_budget_spend
 )
 from mcp.agents.base_agent import BaseAgent
+from datetime import datetime
 
 class BudgetAgent(BaseAgent):
     def __init__(self):
@@ -19,17 +20,17 @@ class BudgetAgent(BaseAgent):
             # map intent output → create_budget inputs
             return create_budget(
                 user_id=1,                   # <- FIX: you must supply a user id
-                category="general",          # <- FIX: extract from text or assume default
-                limit=params["amount"],      # <- map amount → limit
-                period="monthly"
+                category = params["category"] if params["category"] else "miscellaneous",
+                max_limit=params["amount"],      
+                time_period=datetime.now().strftime("%Y-%m"),
             )
 
         elif intent == "get_budgets":
             return get_budgets(user_id=1)
 
-        elif intent == "update_spend":
+        elif intent == "update_budget":
             return update_budget_spend(
-                budget_id=params["budget_id"],
+                category=params["category"] or "miscellaneous",
                 amount=params["amount"]
             )
 

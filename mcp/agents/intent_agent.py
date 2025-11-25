@@ -15,6 +15,7 @@ class IntentSchema(BaseModel):
     intent: str
     amount: Optional[float] = None
     payee: Optional[str] = None
+    category: Optional[str] = None
     confidence: Optional[float] = None
 
 
@@ -40,9 +41,9 @@ class IntentAgent:
             input_variables=["text", "intents_list", "parser_schema"],
             template=(
                 """ \no_think You are an intent extractor for a financial assistant. """
-                "Identify the user's intent and extract amount (if any) and payee (if any).\n\n"
+                "Identify the user's intent and extract amount (if any), category (if any), payee (if any).\n\n"
                 "VERY IMPORTANT: Return ONLY valid JSON. No explanation. No thinking. No <think> blocks.\n"
-                 "DO NOT include internal reasoning in the output.\n\n"
+                "DO NOT include internal reasoning in the output.\n\n"
                 "Utterance: {text}\n\n"
                 "Available intents: {intents_list}\n\n"
                 "Return only valid JSON following this schema:\n\n"
@@ -65,13 +66,7 @@ class IntentAgent:
 
         # print("[DEBUG] prompt_text:", prompt_text)
         try:
-            response = self.llm.invoke([
-                {
-                "role": "system",
-                "content": "You are a helpful assistant.",
-                },
-                { "role": "user", "content": prompt_text },
-            ])
+            response = self.llm.invoke([prompt_text])
             out = response.content
             # print("[DEBUG] out:", out)
 
@@ -88,7 +83,7 @@ class IntentAgent:
 
             return (
                 parsed.intent,
-                {"amount": parsed.amount, "payee": parsed.payee},
+                {"amount": parsed.amount, "payee": parsed.payee, "category": parsed.category},
                 float(parsed.confidence) if parsed.confidence else 0.85
             )
 

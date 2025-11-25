@@ -8,8 +8,9 @@ class Transaction(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
+    type = Column(String, nullable=False, default="expense", allowed_values=["expense", "income"])
     amount = Column(Float, nullable=False)
-    category = Column(String)
+    category = Column(String, default="miscellaneous")
     raw_description = Column(String)
     timestamp = Column(DateTime(timezone=True), server_default=func.now())
     is_recurring = Column(Boolean, default=False)
