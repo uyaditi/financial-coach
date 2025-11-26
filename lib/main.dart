@@ -1,3 +1,4 @@
+import 'package:ezmoney/porcupine_service.dart';
 import 'package:ezmoney/splash.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -14,6 +15,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetMaterialApp(
       title: 'ezMoney',
+      scaffoldMessengerKey: PorcupineService.scaffoldMessengerKey,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,

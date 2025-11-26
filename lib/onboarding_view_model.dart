@@ -76,163 +76,20 @@ class OnboardingController extends GetxController {
   final List<OnboardingPage> onboardingPages = [];
 
   // Update the testVoiceCommand method
-// Replace the entire testVoiceCommand method
   Future<void> testVoiceCommand(BuildContext context) async {
     bool initialized = await _porcupineService.initialize();
 
     if (!initialized) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please grant microphone permission'),
-          backgroundColor: Colors.red,
-          duration: Duration(seconds: 2),
-        ),
-      );
       return;
     }
 
-    // First disable if already running
-    await _porcupineService.disable();
-    await Future.delayed(const Duration(milliseconds: 500));
-
-    bool wakeWordDetected = false;
-    bool commandReceived = false;
-
-    _porcupineService.onWakeWordDetected = () {
-      debugPrint('DEBUG: Wake word detected in test mode!');
-      wakeWordDetected = true;
-
-      // Clear previous snackbars
-      ScaffoldMessenger.of(context).clearSnackBars();
-
-      // Show listening for command
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Row(
-            children: [
-              SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: Colors.white,
-                ),
-              ),
-              SizedBox(width: 12),
-              Expanded(
-                child: Text('🎤 Listening for your command... (10 seconds)'),
-              ),
-            ],
-          ),
-          backgroundColor: Colors.green,
-          duration: Duration(seconds: 10),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-    };
-
-    _porcupineService.onCommandRecognized = (command) {
-      debugPrint('DEBUG: Command recognized in test mode: $command');
-      commandReceived = true;
-
-      // Clear any existing snackbars
-      ScaffoldMessenger.of(context).clearSnackBars();
-
-      // Show the recognized command
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Row(
-                children: [
-                  Icon(Icons.check_circle, color: Colors.white),
-                  SizedBox(width: 8),
-                  Text(
-                    'Command Received:',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Text(
-                command.isEmpty ? 'No command detected' : command,
-                style: const TextStyle(fontSize: 15),
-              ),
-            ],
-          ),
-          backgroundColor: command.isEmpty ? Colors.orange : Colors.blue,
-          duration: const Duration(seconds: 5),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-
-      // Auto-stop test mode after command is recognized
-      Future.delayed(const Duration(seconds: 3), () {
-        _porcupineService.stopListening();
-        debugPrint('DEBUG: Test mode stopped');
-      });
-    };
-
-    _porcupineService.onError = (error) {
-      debugPrint('DEBUG: Error in test mode: $error');
-      ScaffoldMessenger.of(context).clearSnackBars();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error: $error'),
-          backgroundColor: Colors.red,
-          duration: const Duration(seconds: 3),
-        ),
-      );
-    };
-
-    // Enable the service for testing
+    // Temporarily enable for testing
     await _porcupineService.enable();
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Row(
-          children: [
-            SizedBox(
-              width: 16,
-              height: 16,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: Colors.white,
-              ),
-            ),
-            SizedBox(width: 12),
-            Expanded(
-              child: Text('🎤 Test Mode Active - Say "Hey Fin" now...'),
-            ),
-          ],
-        ),
-        backgroundColor: Colors.orange,
-        duration: Duration(seconds: 30),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-
-    // Auto stop after 30 seconds if no wake word detected
+    // Auto stop after 30 seconds
     Future.delayed(const Duration(seconds: 30), () {
-      if (_porcupineService.isListening && !commandReceived) {
-        _porcupineService.stopListening();
-        ScaffoldMessenger.of(context).clearSnackBars();
-
-        if (!wakeWordDetected) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Test mode timeout - No wake word detected'),
-              backgroundColor: Colors.grey,
-              duration: Duration(seconds: 2),
-            ),
-          );
-          debugPrint('DEBUG: Test mode timeout - No wake word');
-        }
+      if (_porcupineService.isListening) {
+        _porcupineService.disable();
       }
     });
   }
@@ -358,7 +215,6 @@ class OnboardingController extends GetxController {
   }
 
   // Update the voice toggle in OnboardingController
-  // Update the toggleVoiceAssistant method
   void toggleVoiceAssistant(bool value, BuildContext context) async {
     voiceEnabled.value = value;
 
@@ -368,107 +224,18 @@ class OnboardingController extends GetxController {
 
       if (!initialized) {
         voiceEnabled.value = false;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-                'Please grant microphone permission to use voice commands'),
-            backgroundColor: Colors.red,
-            duration: Duration(seconds: 2),
-          ),
-        );
         return;
       }
 
-      _porcupineService.onWakeWordDetected = () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Row(
-              children: [
-                Icon(Icons.mic, color: Colors.white),
-                SizedBox(width: 12),
-                Expanded(
-                  child:
-                      Text('🎤 Hey Fin Activated! Listening for 10 seconds...'),
-                ),
-              ],
-            ),
-            backgroundColor: Colors.green,
-            duration: Duration(seconds: 2),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      };
-
+      // Set up callback for command processing (optional)
       _porcupineService.onCommandRecognized = (command) {
-        debugPrint('DEBUG: Command recognized: $command');
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'You said:',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 4),
-                Text(command),
-              ],
-            ),
-            backgroundColor: Colors.blue,
-            duration: const Duration(seconds: 4),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-
-        // Here you can process the command further
+        debugPrint('Processing command: $command');
         _processVoiceCommand(command);
       };
 
-      _porcupineService.onError = (error) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Voice Assistant Error: $error'),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 2),
-          ),
-        );
-      };
-
-      _porcupineService.onStatusChanged = (isActive) {
-        voiceEnabled.value = isActive;
-      };
-
       await _porcupineService.enable();
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Row(
-            children: [
-              Icon(Icons.check_circle, color: Colors.white),
-              SizedBox(width: 12),
-              Expanded(
-                child:
-                    Text('✓ Voice Assistant Enabled - Say "Hey Fin" anytime'),
-              ),
-            ],
-          ),
-          backgroundColor: Colors.green,
-          duration: Duration(seconds: 2),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
     } else {
-      // Disable voice assistant
       await _porcupineService.disable();
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Voice Assistant Disabled'),
-          backgroundColor: Colors.grey,
-          duration: Duration(seconds: 2),
-        ),
-      );
     }
   }
 
@@ -489,26 +256,30 @@ class OnboardingController extends GetxController {
   }
 
   // Validate current page before moving forward
-  bool validateCurrentPage() {
+  // Validate current page before moving forward
+  bool validateCurrentPage(BuildContext context) {
+    // Add BuildContext parameter
     switch (currentPage.value) {
       case 1: // Profile Setup
         if (selectedName.value.isEmpty) {
-          Get.snackbar(
-            'Required',
-            'Please enter your name',
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.red.shade100,
-            colorText: Colors.red.shade900,
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Please enter your name'),
+              backgroundColor: Colors.red,
+              duration: Duration(seconds: 2),
+              behavior: SnackBarBehavior.floating,
+            ),
           );
           return false;
         }
         if (selectedGoals.isEmpty) {
-          Get.snackbar(
-            'Required',
-            'Please select at least one financial goal',
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.red.shade100,
-            colorText: Colors.red.shade900,
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Please select at least one financial goal'),
+              backgroundColor: Colors.red,
+              duration: Duration(seconds: 2),
+              behavior: SnackBarBehavior.floating,
+            ),
           );
           return false;
         }
@@ -523,9 +294,10 @@ class OnboardingController extends GetxController {
     return true;
   }
 
-  // Override nextPage to include validation - FIXED: Method name
-  void nextPageWithValidation() {
-    if (validateCurrentPage()) {
+// Override nextPage to include validation
+  void nextPageWithValidation(BuildContext context) {
+    // Add BuildContext parameter
+    if (validateCurrentPage(context)) {
       nextPage();
     }
   }

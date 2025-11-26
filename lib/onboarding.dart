@@ -135,44 +135,51 @@ class OnboardingView extends StatelessWidget {
                       )),
 
                   // Right Button (Next/Get Started)
-                  Obx(() => SizedBox(
-                        width: 60,
-                        height: 60,
-                        child: IconButton(
-                          onPressed: controller.isLastPage.value
-                              ? controller.completeOnboarding
-                              : controller.nextPageWithValidation,
-                          icon: Container(
-                            width: 60,
-                            height: 60,
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [
-                                  Color(0xFF4F46E5),
-                                  Color(0xFF6366F1),
+                  // Right Button (Next/Get Started)
+                  Obx(() {
+                    final isLast = controller.isLastPage.value;
+                    return SizedBox(
+                      width: 60,
+                      height: 60,
+                      child: Builder(
+                        builder: (BuildContext ctx) {
+                          return IconButton(
+                            onPressed: isLast
+                                ? controller.completeOnboarding
+                                : () => controller.nextPageWithValidation(
+                                    ctx), // Pass context here
+                            icon: Container(
+                              width: 60,
+                              height: 60,
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    Color(0xFF4F46E5),
+                                    Color(0xFF6366F1),
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(30),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFF4F46E5)
+                                        .withValues(alpha: 0.3),
+                                    blurRadius: 12,
+                                    offset: const Offset(0, 4),
+                                  ),
                                 ],
                               ),
-                              borderRadius: BorderRadius.circular(30),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: const Color(0xFF4F46E5)
-                                      .withValues(alpha: 0.3),
-                                  blurRadius: 12,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
+                              child: Icon(
+                                isLast ? Icons.check : Icons.arrow_forward_ios,
+                                color: Colors.white,
+                              ),
                             ),
-                            child: Icon(
-                              controller.isLastPage.value
-                                  ? Icons.check
-                                  : Icons.arrow_forward_ios,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      )),
+                          );
+                        },
+                      ),
+                    );
+                  }),
                 ],
               ),
             ),
@@ -184,197 +191,199 @@ class OnboardingView extends StatelessWidget {
 
   // Info Page (Original design)
   Widget _buildInfoPage(OnboardingPage page) {
-    return Stack(
-      children: [
-        // Floating Elements Background
-        Positioned(
-          top: 50,
-          right: -50,
-          child: Container(
-            width: 200,
-            height: 200,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: RadialGradient(
-                colors: [
-                  page.primaryColor.withValues(alpha: 0.1),
-                  page.primaryColor.withValues(alpha: 0.0),
-                ],
+    return SingleChildScrollView(
+      child: Stack(
+        children: [
+          // Floating Elements Background
+          Positioned(
+            top: 50,
+            right: -50,
+            child: Container(
+              width: 200,
+              height: 200,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    page.primaryColor.withValues(alpha: 0.1),
+                    page.primaryColor.withValues(alpha: 0.0),
+                  ],
+                ),
               ),
             ),
           ),
-        ),
-        Positioned(
-          bottom: 100,
-          left: -80,
-          child: Container(
-            width: 250,
-            height: 250,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: RadialGradient(
-                colors: [
-                  page.primaryColor.withValues(alpha: 0.08),
-                  page.primaryColor.withValues(alpha: 0.0),
-                ],
+          Positioned(
+            bottom: 100,
+            left: -80,
+            child: Container(
+              width: 250,
+              height: 250,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    page.primaryColor.withValues(alpha: 0.08),
+                    page.primaryColor.withValues(alpha: 0.0),
+                  ],
+                ),
               ),
             ),
           ),
-        ),
-
-        // Main Content
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Animated Icon Container
-              TweenAnimationBuilder(
-                duration: const Duration(milliseconds: 800),
-                tween: Tween<double>(begin: 0, end: 1),
-                builder: (context, double value, child) {
-                  return Transform.scale(
-                    scale: value,
-                    child: Container(
-                      width: 180,
-                      height: 180,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            page.primaryColor,
-                            page.primaryColor.withValues(alpha: 0.7),
+      
+          // Main Content
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Animated Icon Container
+                TweenAnimationBuilder(
+                  duration: const Duration(milliseconds: 800),
+                  tween: Tween<double>(begin: 0, end: 1),
+                  builder: (context, double value, child) {
+                    return Transform.scale(
+                      scale: value,
+                      child: Container(
+                        width: 180,
+                        height: 180,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              page.primaryColor,
+                              page.primaryColor.withValues(alpha: 0.7),
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(90),
+                          boxShadow: [
+                            BoxShadow(
+                              color: page.primaryColor.withValues(alpha: 0.3),
+                              blurRadius: 40,
+                              offset: const Offset(0, 20),
+                            ),
                           ],
                         ),
-                        borderRadius: BorderRadius.circular(90),
-                        boxShadow: [
-                          BoxShadow(
-                            color: page.primaryColor.withValues(alpha: 0.3),
-                            blurRadius: 40,
-                            offset: const Offset(0, 20),
-                          ),
-                        ],
-                      ),
-                      child: Stack(
-                        children: [
-                          // Outer Ring
-                          Positioned.fill(
-                            child: Container(
-                              margin: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: Colors.white.withValues(alpha: 0.3),
-                                  width: 2,
+                        child: Stack(
+                          children: [
+                            // Outer Ring
+                            Positioned.fill(
+                              child: Container(
+                                margin: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: Colors.white.withValues(alpha: 0.3),
+                                    width: 2,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                          // Icon
-                          Center(
-                            child: Icon(
-                              page.icon,
-                              size: 90,
-                              color: Colors.white,
+                            // Icon
+                            Center(
+                              child: Icon(
+                                page.icon,
+                                size: 90,
+                                color: Colors.white,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: 60),
-
-              // App Logo/Name Badge
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 8,
+                    );
+                  },
                 ),
-                decoration: BoxDecoration(
-                  color: page.primaryColor.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: page.primaryColor.withValues(alpha: 0.3),
-                    width: 1,
+                const SizedBox(height: 60),
+      
+                // App Logo/Name Badge
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: page.primaryColor.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: page.primaryColor.withValues(alpha: 0.3),
+                      width: 1,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 6,
+                        height: 6,
+                        decoration: BoxDecoration(
+                          color: page.primaryColor,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'EZMONEY AI',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: page.primaryColor,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 6,
-                      height: 6,
-                      decoration: BoxDecoration(
-                        color: page.primaryColor,
-                        shape: BoxShape.circle,
-                      ),
+                const SizedBox(height: 24),
+      
+                // Title with Gradient
+                ShaderMask(
+                  shaderCallback: (bounds) => LinearGradient(
+                    colors: [
+                      page.primaryColor,
+                      page.primaryColor.withValues(alpha: 0.8),
+                    ],
+                  ).createShader(bounds),
+                  child: Text(
+                    page.title,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      height: 1.2,
                     ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'EZMONEY AI',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: page.primaryColor,
-                        letterSpacing: 1.2,
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 24),
-
-              // Title with Gradient
-              ShaderMask(
-                shaderCallback: (bounds) => LinearGradient(
-                  colors: [
-                    page.primaryColor,
-                    page.primaryColor.withValues(alpha: 0.8),
-                  ],
-                ).createShader(bounds),
-                child: Text(
-                  page.title,
+                const SizedBox(height: 20),
+      
+                // Description
+                Text(
+                  page.description,
                   textAlign: TextAlign.center,
                   style: const TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    height: 1.2,
+                    fontSize: 16,
+                    color: Color(0xFF6B7280),
+                    height: 1.6,
                   ),
                 ),
-              ),
-              const SizedBox(height: 20),
-
-              // Description
-              Text(
-                page.description,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: Color(0xFF6B7280),
-                  height: 1.6,
+                const SizedBox(height: 40),
+      
+                // Feature Pills
+                Wrap(
+                  alignment: WrapAlignment.center,
+                  spacing: 12,
+                  runSpacing: 12,
+                  children: [
+                    _buildFeaturePill('🎤 Voice-First', page.primaryColor),
+                    _buildFeaturePill('🤖 AI-Powered', page.primaryColor),
+                    _buildFeaturePill('🔒 Secure', page.primaryColor),
+                  ],
                 ),
-              ),
-              const SizedBox(height: 40),
-
-              // Feature Pills
-              Wrap(
-                alignment: WrapAlignment.center,
-                spacing: 12,
-                runSpacing: 12,
-                children: [
-                  _buildFeaturePill('🎤 Voice-First', page.primaryColor),
-                  _buildFeaturePill('🤖 AI-Powered', page.primaryColor),
-                  _buildFeaturePill('🔒 Secure', page.primaryColor),
-                ],
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 

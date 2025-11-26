@@ -1,6 +1,6 @@
 // ignore_for_file: constant_identifier_names, deprecated_member_use
 
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:porcupine_flutter/porcupine_manager.dart';
 import 'package:porcupine_flutter/porcupine_error.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -13,6 +13,10 @@ class PorcupineService {
   bool _isEnabled = false;
   bool _isProcessingCommand = false;
   String _recognizedText = '';
+  
+  // Global key for showing snackbars from anywhere
+  static final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey = 
+      GlobalKey<ScaffoldMessengerState>();
 
   Function()? onWakeWordDetected;
   Function(String)? onError;
@@ -23,10 +27,36 @@ class PorcupineService {
       'pfBQ2zFX1lipi+davtRVPoUcoUg67OUTp+/tfphbhY9yiZ88SEgXcQ==';
   static const String WAKE_WORD_PATH = 'assets/fin.ppn';
 
+  // Show snackbar using global key
+  void _showSnackBar(String message, Color backgroundColor, {IconData? icon}) {
+    scaffoldMessengerKey.currentState?.clearSnackBars();
+    scaffoldMessengerKey.currentState?.showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            if (icon != null) ...[
+              Icon(icon, color: Colors.white, size: 20),
+              const SizedBox(width: 12),
+            ],
+            Expanded(child: Text(message)),
+          ],
+        ),
+        backgroundColor: backgroundColor,
+        duration: const Duration(seconds: 3),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
   Future<bool> initialize() async {
     try {
       var status = await Permission.microphone.request();
       if (!status.isGranted) {
+        _showSnackBar(
+          'Please grant microphone permission to use voice commands',
+          Colors.red,
+          icon: Icons.mic_off,
+        );
         onError?.call('Microphone permission denied');
         return false;
       }
@@ -38,12 +68,22 @@ class PorcupineService {
       );
 
       if (!available) {
+        _showSnackBar(
+          'Speech recognition not available on this device',
+          Colors.red,
+          icon: Icons.error,
+        );
         onError?.call('Speech recognition not available');
         return false;
       }
 
       return true;
     } catch (e) {
+      _showSnackBar(
+        'Initialization error: $e',
+        Colors.red,
+        icon: Icons.error,
+      );
       onError?.call('Initialization error: $e');
       return false;
     }
@@ -53,12 +93,24 @@ class PorcupineService {
     _isEnabled = true;
     await startListening();
     onStatusChanged?.call(true);
+    
+    _showSnackBar(
+      '✓ Voice Assistant Enabled - Say "Hey Fin" anytime',
+      Colors.green,
+      icon: Icons.check_circle,
+    );
   }
 
   Future<void> disable() async {
     _isEnabled = false;
     await stopListening();
     onStatusChanged?.call(false);
+    
+    _showSnackBar(
+      'Voice Assistant Disabled',
+      Colors.grey,
+      icon: Icons.mic_off,
+    );
   }
 
   Future<void> startListening() async {
@@ -69,7 +121,15 @@ class PorcupineService {
         ACCESS_KEY,
         [WAKE_WORD_PATH],
         (keywordIndex) async {
-          debugPrint('Hey Fin detected!');
+          debugPrint('🎤 Hey Fin detected!');
+          
+          // Show wake word detected snackbar
+          _showSnackBar(
+            '🎤 Hey Fin Activated! Listening for your command...',
+            Colors.green,
+            icon: Icons.mic,
+          );
+          
           onWakeWordDetected?.call();
 
           // Start listening for command after wake word
@@ -77,6 +137,11 @@ class PorcupineService {
         },
         errorCallback: (error) {
           debugPrint('Porcupine error: ${error.message}');
+          _showSnackBar(
+            'Voice Assistant Error: ${error.message}',
+            Colors.red,
+            icon: Icons.error,
+          );
           onError?.call(error.message ?? 'Unknown error');
 
           // Auto-restart on error if still enabled
@@ -90,12 +155,27 @@ class PorcupineService {
 
       await _porcupineManager!.start();
       _isListening = true;
-      debugPrint('Porcupine started listening for "Hey Fin"...');
+      debugPrint('✓ Porcupine started listening for "Hey Fin"...');
     } on PorcupineActivationException {
+      _showSnackBar(
+        'Invalid ACCESS_KEY',
+        Colors.red,
+        icon: Icons.error,
+      );
       onError?.call('Invalid ACCESS_KEY');
     } on PorcupineActivationLimitException {
+      _showSnackBar(
+        'ACCESS_KEY reached activation limit',
+        Colors.red,
+        icon: Icons.error,
+      );
       onError?.call('ACCESS_KEY reached activation limit');
     } on PorcupineException catch (ex) {
+      _showSnackBar(
+        'Porcupine error: ${ex.message}',
+        Colors.red,
+        icon: Icons.error,
+      );
       onError?.call('Porcupine error: ${ex.message}');
     }
   }
@@ -106,7 +186,6 @@ class PorcupineService {
     _isProcessingCommand = true;
     _recognizedText = '';
 
-    // Temporarily stop wake word detection
     await _porcupineManager?.stop();
 
     try {
@@ -128,15 +207,32 @@ class PorcupineService {
       // Stop speech recognition
       await _speech.stop();
 
-      // debugPrint and callback with the final recognized text
-      debugPrint('Final recognized command: $_recognizedText');
+      // Show the recognized command immediately
+      debugPrint('✓ Final recognized command: $_recognizedText');
+      
       if (_recognizedText.isNotEmpty) {
+        // Show command recognized snackbar immediately
+        _showSnackBar(
+          'You said: "$_recognizedText"',
+          Colors.blue,
+          icon: Icons.message,
+        );
         onCommandRecognized?.call(_recognizedText);
       } else {
+        _showSnackBar(
+          'No command detected. Please try again.',
+          Colors.orange,
+          icon: Icons.warning,
+        );
         onCommandRecognized?.call('No command detected');
       }
     } catch (e) {
       debugPrint('Error listening for command: $e');
+      _showSnackBar(
+        'Error listening for command',
+        Colors.red,
+        icon: Icons.error,
+      );
       onError?.call('Error listening for command');
     } finally {
       _isProcessingCommand = false;
@@ -145,6 +241,7 @@ class PorcupineService {
       if (_isEnabled) {
         await Future.delayed(const Duration(milliseconds: 500));
         await _porcupineManager?.start();
+        debugPrint('🔄 Restarted listening for "Hey Fin"...');
       }
     }
   }
@@ -158,7 +255,7 @@ class PorcupineService {
       _porcupineManager = null;
       _isListening = false;
       _isProcessingCommand = false;
-      debugPrint('Porcupine stopped');
+      debugPrint('🛑 Porcupine stopped');
     } catch (e) {
       debugPrint('Error stopping Porcupine: $e');
     }

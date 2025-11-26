@@ -11,6 +11,7 @@ class HomeDashboardView extends StatelessWidget {
     final controller = Get.put(HomeDashboardViewModel());
 
     return Scaffold(
+      backgroundColor: Colors.white,
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
@@ -109,6 +110,7 @@ class HomeDashboardView extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               _buildAIInsights(controller),
+              const SizedBox(height: 120),
             ],
           ),
         ),
