@@ -8,7 +8,32 @@ from langchain_groq import ChatGroq
 from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import PydanticOutputParser
 
+from datetime import datetime, timedelta
+import calendar
+
 load_dotenv()
+
+from datetime import datetime, timedelta
+import calendar
+
+def extract_time_period(text: str):
+    text = text.lower()
+    # explicit month names
+    for idx, month in enumerate(calendar.month_name):
+        if idx == 0:
+            continue
+        if month.lower() in text:
+            year = datetime.now().year
+            return f"{year}-{idx:02d}"
+
+    # implicit
+    if "this month" in text:
+        return datetime.now().strftime("%Y-%m")
+    if "next month" in text:
+        next_month = (datetime.now().replace(day=1) + timedelta(days=32))
+        return next_month.strftime("%Y-%m")
+
+    return None
 
 
 class IntentSchema(BaseModel):
@@ -40,15 +65,26 @@ class IntentAgent:
         self.prompt = PromptTemplate(
             input_variables=["text", "intents_list", "parser_schema"],
             template=(
-                """ \no_think You are an intent extractor for a financial assistant. """
-                "Identify the user's intent and extract amount (if any), category (if any), payee (if any).\n\n"
+                """ 
+                \no_think You are an intent extractor for a financial assistant.
+                Your job:
+                1. Identify the user's intent from: {intents_list} 
+                2. Extract amount (if present), 
+                3. Extract category (budget or expense categor like food, commute, etcif any), 
+                4. Extractpayee (if any for payments).
+                5. Detect time period expressions such as:
+                - "this month" → current YYYY-MM
+                - "next month" → next YYYY-MM
+                - explicit month name e.g. "December" → map to YYYY-12
+
                 "VERY IMPORTANT: Return ONLY valid JSON. No explanation. No thinking. No <think> blocks.\n"
                 "DO NOT include internal reasoning in the output.\n\n"
                 "Utterance: {text}\n\n"
                 "Available intents: {intents_list}\n\n"
                 "Return only valid JSON following this schema:\n\n"
                 "{parser_schema}\n\n"
-                "If intent is unclear, return intent='unknown'."
+                "If intent is unclear, return intent='unknown'.
+                """
             )
         )
 
@@ -80,10 +116,18 @@ class IntentAgent:
                 raise ValueError("No JSON found in LLM output")
             
             parsed = self.parser.parse(out)
+            category = parsed.category or parsed.payee
+            time_period = extract_time_period(text)
+        
+            entities = {
+                "amount": parsed.amount,
+                "category": category,
+                "time_period": time_period
+            }
 
             return (
                 parsed.intent,
-                {"amount": parsed.amount, "payee": parsed.payee, "category": parsed.category},
+                entities,
                 float(parsed.confidence) if parsed.confidence else 0.85
             )
 

@@ -25,7 +25,7 @@ def create_state():
 def route_intent(state: GraphState):
     intent = state["intent"]
 
-    if intent in ["set_budget", "update_budget, get_budgets"]:
+    if intent in ["set_budget", "update_budget", "get_budgets", "remainig_budggets", "show_bidgets", "list_budgets", "what_are_my_bidgets"]:
         return {"next": "budget"}
     elif intent == "send_money":
         return {"next": "payment"}
@@ -43,7 +43,7 @@ def build_graph():
 
     # Instantiate agents
     intents = [
-        "set_budget", "update_budget", "get_budgets", "send_money", "check_balance", "portfolio_value", "stock_pnl",
+        "set_budget", "update_budget", "get_budgets", "remaining_budger","show_budgets", "list_budgets", "what_are_my_budgets", "send_money", "check_balance", "portfolio_value", "stock_pnl",
         "portfolio_strategy", "portfolio_advice", "portfolio_rebalancing", "portfolio_review", "portfolio_optimize"
     ]
     intent_agent = IntentAgent(intents=intents)
