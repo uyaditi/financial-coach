@@ -13,9 +13,9 @@ class PorcupineService {
   bool _isEnabled = false;
   bool _isProcessingCommand = false;
   String _recognizedText = '';
-  
+
   // Global key for showing snackbars from anywhere
-  static final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey = 
+  static final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
       GlobalKey<ScaffoldMessengerState>();
 
   Function()? onWakeWordDetected;
@@ -93,7 +93,7 @@ class PorcupineService {
     _isEnabled = true;
     await startListening();
     onStatusChanged?.call(true);
-    
+
     _showSnackBar(
       '✓ Voice Assistant Enabled - Say "Hey Fin" anytime',
       Colors.green,
@@ -105,7 +105,7 @@ class PorcupineService {
     _isEnabled = false;
     await stopListening();
     onStatusChanged?.call(false);
-    
+
     _showSnackBar(
       'Voice Assistant Disabled',
       Colors.grey,
@@ -122,14 +122,14 @@ class PorcupineService {
         [WAKE_WORD_PATH],
         (keywordIndex) async {
           debugPrint('🎤 Hey Fin detected!');
-          
+
           // Show wake word detected snackbar
           _showSnackBar(
             '🎤 Hey Fin Activated! Listening for your command...',
             Colors.green,
             icon: Icons.mic,
           );
-          
+
           onWakeWordDetected?.call();
 
           // Start listening for command after wake word
@@ -185,15 +185,18 @@ class PorcupineService {
 
     _isProcessingCommand = true;
     _recognizedText = '';
+    bool isDone = false;
 
     await _porcupineManager?.stop();
 
     try {
-      // Listen for 10 seconds
       await _speech.listen(
         onResult: (result) {
           _recognizedText = result.recognizedWords;
           debugPrint('Heard: $_recognizedText');
+        },
+        onSoundLevelChange: (level) {
+          // Optional: provide visual feedback based on sound level
         },
         listenFor: const Duration(seconds: 10),
         pauseFor: const Duration(seconds: 3),
@@ -201,17 +204,20 @@ class PorcupineService {
         cancelOnError: false,
       );
 
-      // Wait for listening to complete
-      await Future.delayed(const Duration(seconds: 10));
+      // Wait until speech recognition stops (either by pause or timeout)
+      while (_speech.isListening && !isDone) {
+        await Future.delayed(const Duration(milliseconds: 100));
+      }
 
-      // Stop speech recognition
-      await _speech.stop();
+      // Ensure it's stopped
+      if (_speech.isListening) {
+        await _speech.stop();
+      }
 
-      // Show the recognized command immediately
+      // Show result immediately
       debugPrint('✓ Final recognized command: $_recognizedText');
-      
+
       if (_recognizedText.isNotEmpty) {
-        // Show command recognized snackbar immediately
         _showSnackBar(
           'You said: "$_recognizedText"',
           Colors.blue,
@@ -237,7 +243,6 @@ class PorcupineService {
     } finally {
       _isProcessingCommand = false;
 
-      // Restart wake word detection if still enabled
       if (_isEnabled) {
         await Future.delayed(const Duration(milliseconds: 500));
         await _porcupineManager?.start();

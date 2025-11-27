@@ -1,5 +1,5 @@
 // ignore_for_file: use_build_context_synchronously
-
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ezmoney/main_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -102,6 +102,7 @@ class OnboardingController extends GetxController {
       currentPage.value = pageController.page?.round() ?? 0;
       isLastPage.value = currentPage.value == onboardingPages.length - 1;
     });
+    loadToggleState();
   }
 
   void _initializePages() {
@@ -214,28 +215,59 @@ class OnboardingController extends GetxController {
     Get.offAllNamed('/home');
   }
 
+  // Add this constant at the top of the class
+  static const String _voiceEnabledKey = 'voice_assistant_enabled';
+
+// Check and auto-enable voice on app start
+  static Future<void> initializeVoiceOnAppStart() async {
+    final prefs = await SharedPreferences.getInstance();
+    final isVoiceEnabled = prefs.getBool(_voiceEnabledKey) ?? false;
+
+    if (isVoiceEnabled) {
+      final porcupineService = PorcupineService();
+      bool initialized = await porcupineService.initialize();
+
+      if (initialized) {
+        await porcupineService.enable();
+      }
+    }
+  }
+
+// Save voice state
+  Future<void> _saveVoiceState(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_voiceEnabledKey, value);
+  }
+
+// Load saved state to update toggle UI
+  Future<void> loadToggleState() async {
+    final prefs = await SharedPreferences.getInstance();
+    voiceEnabled.value = prefs.getBool(_voiceEnabledKey) ?? false;
+  }
+
   // Update the voice toggle in OnboardingController
   void toggleVoiceAssistant(bool value, BuildContext context) async {
     voiceEnabled.value = value;
 
     if (value) {
-      // Enable voice assistant
       bool initialized = await _porcupineService.initialize();
 
       if (!initialized) {
         voiceEnabled.value = false;
+        await _saveVoiceState(false);
         return;
       }
 
-      // Set up callback for command processing (optional)
       _porcupineService.onCommandRecognized = (command) {
         debugPrint('Processing command: $command');
         _processVoiceCommand(command);
       };
 
       await _porcupineService.enable();
+      await _saveVoiceState(true); // Save to SharedPreferences
     } else {
       await _porcupineService.disable();
+      await _saveVoiceState(false); // Save to SharedPreferences
     }
   }
 
