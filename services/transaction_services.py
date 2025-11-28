@@ -1,9 +1,9 @@
 from config.database import SessionLocal
 from models.transaction import Transaction
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy.sql import func
 
-def create_expense(amount: float, category: str = "miscellenous", raw_description: str = None, is_recurring: bool = False):
+def create_expense(user_id: int, amount: float, payee: str = None, category: str = "miscellenous", raw_description: str = None, is_recurring: bool = False):
     db = SessionLocal()
     try: 
         tx = Transaction(
@@ -11,6 +11,7 @@ def create_expense(amount: float, category: str = "miscellenous", raw_descriptio
             type = "expense",
             amount = amount, 
             category = category,
+            payee = payee,
             raw_description = raw_description,
             # timestamp = datetime.now(timezone.utc),
             is_recurring = is_recurring
@@ -25,20 +26,24 @@ def create_expense(amount: float, category: str = "miscellenous", raw_descriptio
     finally:
         db.close()
 
-                   
-def get_transactions(type: str = "expense", category: str = None): 
+
+def get_transactions(type: str = None, category: str = None): 
     db = SessionLocal()
     try: 
-        txs = (
+        query = (
             db.query(Transaction)
             .filter(Transaction.user_id == 1)
-            .filter(Transaction.type == type)
-            .filter(Transaction.category == category)
-            .order_by(Transaction.timestamp.desc())
-            .all()
         )
 
-        return [
+        if category is not None:  
+            query = query.filter(Transaction.category == category)
+
+        if type is not None: 
+            query = query.filter(Transaction.type == type)
+
+        txs = query.order_by(Transaction.timestamp.desc()).all()
+
+        transaction_list = [
             {
                 "id": t.id, 
                 "type": t.type,
@@ -50,6 +55,8 @@ def get_transactions(type: str = "expense", category: str = None):
             }
             for t in txs
         ]
+        return {"transaction": transaction_list}
+    
     except Exception as e:
         db.rollback()
         return {"status": "error", "message": str(e)}
