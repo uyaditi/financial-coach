@@ -27,6 +27,30 @@ def create_expense(user_id: int, amount: float, payee: str = None, category: str
         db.close()
 
 
+def create_income(user_id: int, amount: float, payee: str = None, category: str = "", raw_description: str = None, is_recurring: bool = False):
+    db = SessionLocal()
+    try: 
+        tx = Transaction(
+            user_id = 1, 
+            type = "income",
+            amount = amount, 
+            category = category,
+            payee = payee,
+            raw_description = raw_description,
+            # timestamp = datetime.now(timezone.utc),
+            is_recurring = is_recurring
+        )
+        db.add(tx)
+        db.commit()
+        db.refresh(tx)
+        return {"status": "success", "transaction_id": tx.id}
+    except Exception as e:
+        db.rollback()
+        return {"status": "error", "message": str(e)}
+    finally:
+        db.close()
+
+
 def get_transactions(type: str = None, category: str = None): 
     db = SessionLocal()
     try: 

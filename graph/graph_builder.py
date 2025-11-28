@@ -26,7 +26,7 @@ def create_state():
 def route_intent(state: GraphState):
     intent = state["intent"]
 
-    if intent in ["set_budget", "update_budget", "get_budgets", "remainig_budggets", "show_bidgets", "list_budgets", "what_are_my_bidgets"]:
+    if intent in ["set_budget", "update_budget", "get_budgets", "remaining_budgets", "show_budgets", "list_budgets", "what_are_my_budgets"]:
         return {"next": "budget"}
     elif intent == "send_money":
         return {"next": "payment"}

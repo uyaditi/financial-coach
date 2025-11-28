@@ -1,9 +1,11 @@
 from fastapi import FastAPI
 from routes.budget_routes import router as budget_routes
+from routes.transaction_routes import router as transaction_routes
 
 app = FastAPI()
 
 app.include_router(budget_routes)
+app.include_router(transaction_routes)
 
 
 if __name__  == "__main__":
