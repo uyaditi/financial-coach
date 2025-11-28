@@ -5,6 +5,7 @@ from mcp.agents.budget_agent import BudgetAgent
 from mcp.agents.payment_agent import PaymentAgent
 from mcp.agents.intent_agent import IntentAgent
 from mcp.agents.investment_agent import InvestmentAgent
+from mcp.agents.transaction_agent import TransactionAgent
 from typing import TypedDict, Any
 from config.constants import DYNAMIC_STOCKS
 
@@ -34,6 +35,8 @@ def route_intent(state: GraphState):
         "portfolio_advice", "portfolio_rebalancing", "portfolio_review"
     ]:
         return {"next": "investment"}
+    elif intent in ["get_exepenses", "create_expenses", "update_expenses", "delete_expenses", "create_income", "update_income", "delete_income", "get_income"]:
+        return {"next": "transactions"}
     else:
         return {"next": "unknown"}  # fallback
 
@@ -44,12 +47,14 @@ def build_graph():
     # Instantiate agents
     intents = [
         "set_budget", "update_budget", "get_budgets", "remaining_budger","show_budgets", "list_budgets", "what_are_my_budgets", "send_money", "check_balance", "portfolio_value", "stock_pnl",
-        "portfolio_strategy", "portfolio_advice", "portfolio_rebalancing", "portfolio_review", "portfolio_optimize"
+        "portfolio_strategy", "portfolio_advice", "portfolio_rebalancing", "portfolio_review", "portfolio_optimize", 
+        "get_exepenses", "create_expenses", "update_expenses", "delete_expenses", "create_income", "update_income", "delete_income", "get_income"
     ]
     intent_agent = IntentAgent(intents=intents)
     budget_agent = BudgetAgent()
     payment_agent = PaymentAgent()
     investment_agent = InvestmentAgent()
+    transaction_agent = TransactionAgent()
 
     def intent_node(state: GraphState):
         intent, entities, conf = intent_agent.classify(state["input"])
@@ -84,6 +89,7 @@ def build_graph():
     g.add_node("budget", budget_agent.run)
     g.add_node("payment", payment_agent.run)
     g.add_node("investment", investment_agent.run)
+    g.add_node("transactions", transaction_agent.run)
     g.add_node("unknown", unknown_node)
 
     # --- Router node ---
@@ -99,6 +105,7 @@ def build_graph():
             "budget": "budget",
             "payment": "payment",
             "investment": "investment",
+            "transactions": "transactions",
             "unknown": "unknown",
         }
     )
