@@ -48,7 +48,7 @@ def get_budgets(user_id: int = 1):
         db.close()
 
 
-def update_budget_limit(category: str, amount: float):
+def update_budget_limit(user_id: int, category: str, amount: float, time_period: str):
     db = SessionLocal()
     try:
         budget = db.query(Budget).filter(
