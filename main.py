@@ -1,10 +1,11 @@
 from fastapi import FastAPI
 from routes.budget_routes import router as budget_routes
+from routes.investment_routes import router as investment_routes
 
 app = FastAPI()
 
 app.include_router(budget_routes)
-
+app.include_router(investment_routes)
 
 if __name__  == "__main__":
     import uvicorn 

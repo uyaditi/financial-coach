@@ -14,6 +14,6 @@ class Transaction(Base):
     raw_description = Column(String)
     timestamp = Column(DateTime(timezone=True), server_default=func.now())
     is_recurring = Column(Boolean, default=False)
-    payee = Column(String, Nullable=True)
+    payee = Column(String, nullable=True)
 
     user = relationship("User", back_populates="transactions")
