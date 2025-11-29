@@ -1,5 +1,16 @@
 from collections import defaultdict
+import os
+import json
 
+def get_stock_investments(user_id):
+    """
+    Returns a mock API response for user's stock investments, similar to Zerodha's holdings endpoint.
+    """
+    json_path = os.path.join(os.path.dirname(__file__), "investments.json")
+    with open(json_path, "r") as f:
+        data = json.load(f)
+    return data
+    
 def portfolio_summary(investments):
     total_cost = 0
     total_value = 0

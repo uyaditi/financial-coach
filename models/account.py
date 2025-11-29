@@ -10,6 +10,6 @@ class Account(Base):
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
     account_type = Column(String, nullable=False)   # wallet, bank, mf
     balance = Column(Float, default=0.0)
-    metadata = Column(JSON)
+    # metadata = Column(JSON)
 
     user = relationship("User", back_populates="accounts")
