@@ -13,6 +13,7 @@ from routes.budget_routes import router as budget_routes
 from routes.investment_routes import router as investment_routes
 from routes.transaction_routes import router as transaction_routes
 
+
 app = FastAPI(
     title="Financial AI Agent API",
     description="HTTP endpoint for the Financial AI conversational agent",

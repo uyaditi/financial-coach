@@ -17,5 +17,6 @@ class User(Base):
     accounts = relationship("Account", back_populates="user", cascade="all, delete")
     transactions = relationship("Transaction", back_populates="user", cascade="all, delete")
     budgets = relationship("Budget", back_populates="user", cascade="all, delete")
+    debts = relationship("Debt", back_populates="user", cascade="all, delete")
     # investments = relationship("Investment", back_populates="user", cascade="all, delete")
     # loans = relationship("Loan", back_populates="user", cascade="all, delete")
