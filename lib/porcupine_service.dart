@@ -5,14 +5,37 @@ import 'package:porcupine_flutter/porcupine_manager.dart';
 import 'package:porcupine_flutter/porcupine_error.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'package:ezmoney/payments_view_model.dart';
 
 class PorcupineService {
   PorcupineManager? _porcupineManager;
   final stt.SpeechToText _speech = stt.SpeechToText();
+  final PaymentViewModel _paymentViewModel = PaymentViewModel();
+  
   bool _isListening = false;
   bool _isEnabled = false;
   bool _isProcessingCommand = false;
   String _recognizedText = '';
+
+  // Map of contact names to their details (same as in PaymentScreen)
+  final Map<String, Map<String, String>> _contactsMap = {
+    '9769215236': {
+      'name': 'Aryan Surve',
+      'upiId': 'aryan2509surve@oksbi',
+    },
+    '7977296899': {
+      'name': 'Shivam Musterya',
+      'upiId': 'musteryasm@okhdfcbank',
+    },
+    '8657689680': {
+      'name': 'Aryan Kyatham',
+      'upiId': 'kyathamaryan-2@oksbi',
+    },
+    '8422900510': {
+      'name': 'Aditi Gaikwad',
+      'upiId': 'aditigaikwad003-2@okhdfcbank',
+    },
+  };
 
   // Global key for showing snackbars from anywhere
   static final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
@@ -22,6 +45,7 @@ class PorcupineService {
   Function(String)? onError;
   Function(bool)? onStatusChanged;
   Function(String)? onCommandRecognized;
+  Function(String)? onNavigateToChat; // NEW: Callback to navigate to chat with command
 
   static const String ACCESS_KEY =
       'pfBQ2zFX1lipi+davtRVPoUcoUg67OUTp+/tfphbhY9yiZ88SEgXcQ==';
@@ -224,6 +248,24 @@ class PorcupineService {
           icon: Icons.message,
         );
         onCommandRecognized?.call(_recognizedText);
+        
+        // Check if it's a payment command or general command
+        final lowerCommand = _recognizedText.toLowerCase();
+        if (lowerCommand.contains('payment') || 
+            lowerCommand.contains('pay') ||
+            lowerCommand.contains('send money') ||
+            lowerCommand.contains('transfer')) {
+          // Process payment command
+          await _processPaymentCommand(_recognizedText);
+        } else {
+          // Navigate to chat with the command
+          _showSnackBar(
+            'Opening chat assistant...',
+            Colors.blue,
+            icon: Icons.chat,
+          );
+          onNavigateToChat?.call(_recognizedText);
+        }
       } else {
         _showSnackBar(
           'No command detected. Please try again.',
@@ -248,6 +290,139 @@ class PorcupineService {
         await _porcupineManager?.start();
         debugPrint('🔄 Restarted listening for "Hey Fin"...');
       }
+    }
+  }
+
+  Future<void> _processPaymentCommand(String command) async {
+    try {
+      final lowerCommand = command.toLowerCase();
+      
+      debugPrint('🔍 Processing payment command: $command');
+
+      // Extract contact name
+      String? contactKey;
+      String? contactName;
+      String? upiId;
+      
+      for (var entry in _contactsMap.entries) {
+        if (lowerCommand.contains(entry.key.toLowerCase()) ||
+            lowerCommand.contains(entry.value['name']!.toLowerCase())) {
+          contactKey = entry.key;
+          contactName = entry.value['name'];
+          upiId = entry.value['upiId'];
+          break;
+        }
+      }
+
+      if (contactKey == null || contactName == null || upiId == null) {
+        _showSnackBar(
+          'Contact not found. Please mention: ${_contactsMap.keys.join(", ")}',
+          Colors.orange,
+          icon: Icons.person_off,
+        );
+        return;
+      }
+
+      // Extract amount using multiple patterns
+      String? amount;
+      
+      // Pattern 1: "rupees 100" or "rs 100" or "₹100"
+      final rupeePattern = RegExp(r'(?:rupees?|rs\.?|₹)\s*(\d+(?:\.\d{1,2})?)', caseSensitive: false);
+      var match = rupeePattern.firstMatch(lowerCommand);
+      if (match != null) {
+        amount = match.group(1);
+      }
+      
+      // Pattern 2: "100 rupees" or "100 rs"
+      if (amount == null) {
+        final amountFirstPattern = RegExp(r'(\d+(?:\.\d{1,2})?)\s*(?:rupees?|rs\.?)', caseSensitive: false);
+        match = amountFirstPattern.firstMatch(lowerCommand);
+        if (match != null) {
+          amount = match.group(1);
+        }
+      }
+      
+      // Pattern 3: Just numbers with "for" before it
+      if (amount == null) {
+        final forPattern = RegExp(r'for\s+(\d+(?:\.\d{1,2})?)', caseSensitive: false);
+        match = forPattern.firstMatch(lowerCommand);
+        if (match != null) {
+          amount = match.group(1);
+        }
+      }
+
+      if (amount == null) {
+        _showSnackBar(
+          'Amount not found. Please say the amount clearly.',
+          Colors.orange,
+          icon: Icons.currency_rupee,
+        );
+        return;
+      }
+
+      // Extract description/reason
+      String description = 'Voice payment';
+      
+      // Look for "for" keyword to extract reason
+      final forPattern = RegExp(r'for\s+(.+?)(?:\s+(?:of|amount|rupees?|rs\.?|₹|\d+)|$)', caseSensitive: false);
+      match = forPattern.firstMatch(lowerCommand);
+      if (match != null) {
+        String? reason = match.group(1)?.trim();
+        // Clean up amount from reason if present
+        if (reason != null) {
+          reason = reason.replaceAll(RegExp(r'\d+(?:\.\d{1,2})?'), '').trim();
+          if (reason.isNotEmpty && reason.length > 3) {
+            description = reason;
+          }
+        }
+      }
+
+      // Show processing message
+      _showSnackBar(
+        '💳 Processing payment to $contactName for ₹$amount',
+        Colors.blue,
+        icon: Icons.payment,
+      );
+
+      debugPrint('📤 Initiating payment:');
+      debugPrint('  Contact: $contactName');
+      debugPrint('  UPI ID: $upiId');
+      debugPrint('  Amount: ₹$amount');
+      debugPrint('  Description: $description');
+
+      // Get context for payment processing
+      final context = scaffoldMessengerKey.currentContext;
+      if (context == null) {
+        _showSnackBar(
+          'Cannot process payment: Context not available',
+          Colors.red,
+          icon: Icons.error,
+        );
+        return;
+      }
+
+      // Initiate UPI payment directly without dialog
+      final result = await _paymentViewModel.initiateUpiPaymentDirect(
+        upiId: upiId,
+        recipientName: contactName,
+        description: description,
+        amount: amount,
+      );
+
+      if (result != null) {
+        _showSnackBar(
+          result,
+          result.contains('initiated') ? Colors.green : Colors.orange,
+          icon: result.contains('initiated') ? Icons.check_circle : Icons.warning,
+        );
+      }
+    } catch (e) {
+      debugPrint('Error processing payment command: $e');
+      _showSnackBar(
+        'Error processing payment: $e',
+        Colors.red,
+        icon: Icons.error,
+      );
     }
   }
 

@@ -20,10 +20,7 @@ class AddTransactionView extends StatelessWidget {
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () {
             controller.resetForm();
-            if (Get.isSnackbarOpen) {
-              Get.closeAllSnackbars();
-            }
-            Future.microtask(() => Get.back());
+            Get.back();
           },
         ),
         title: const Text(
@@ -40,73 +37,76 @@ class AddTransactionView extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Option Cards
-            Obx(() => Column(
-                  children: [
-                    // Scan Bill Option
-                    _buildOptionCard(
-                      icon: Icons.camera_alt,
-                      title: 'Scan Bill',
-                      subtitle: 'Take a photo of your receipt',
-                      color: const Color(0xFF4D7FFF),
-                      isSelected: controller.selectedImage.value != null,
-                      isDisabled: controller.isManualEntry.value,
-                      onTap: () => _showImageSourceDialog(controller),
-                    ),
+            // Option Cards - Hide during processing AND after image is processed
+            Obx(() {
+              if (controller.isProcessingImage.value || 
+                  controller.isImageProcessed.value) {
+                return const SizedBox.shrink();
+              }
+              return Column(
+                children: [
+                  // Scan Bill Option
+                  _buildOptionCard(
+                    icon: Icons.camera_alt,
+                    title: 'Scan Bill',
+                    subtitle: 'Take a photo of your receipt',
+                    color: const Color(0xFF4D7FFF),
+                    isSelected: false,
+                    isDisabled: controller.isManualEntry.value,
+                    onTap: () => _showImageSourceDialog(controller),
+                  ),
 
-                    const SizedBox(height: 16),
+                  const SizedBox(height: 16),
 
-                    // OR Divider
-                    Row(
-                      children: [
-                        Expanded(child: Divider(color: Colors.grey[300])),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: Text(
-                            'OR',
-                            style: TextStyle(
-                              color: Colors.grey[600],
-                              fontWeight: FontWeight.w500,
-                            ),
+                  // OR Divider
+                  Row(
+                    children: [
+                      Expanded(child: Divider(color: Colors.grey[300])),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Text(
+                          'OR',
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
-                        Expanded(child: Divider(color: Colors.grey[300])),
-                      ],
-                    ),
+                      ),
+                      Expanded(child: Divider(color: Colors.grey[300])),
+                    ],
+                  ),
 
-                    const SizedBox(height: 16),
+                  const SizedBox(height: 16),
 
-                    // Manual Entry Option
-                    _buildOptionCard(
-                      icon: Icons.edit,
-                      title: 'Manual Entry',
-                      subtitle: 'Type description and amount',
-                      color: const Color(0xFF6B9FFF),
-                      isSelected: controller.isManualEntry.value,
-                      isDisabled: controller.selectedImage.value != null,
-                      onTap: () {
-                        controller.enableManualEntry();
-                      },
-                    ),
-                  ],
-                )),
+                  // Manual Entry Option
+                  _buildOptionCard(
+                    icon: Icons.edit,
+                    title: 'Manual Entry',
+                    subtitle: 'Type description and amount',
+                    color: const Color(0xFF6B9FFF),
+                    isSelected: controller.isManualEntry.value,
+                    isDisabled: false,
+                    onTap: () {
+                      controller.enableManualEntry();
+                    },
+                  ),
+                  const SizedBox(height: 24),
+                ],
+              );
+            }),
 
-            const SizedBox(height: 24),
-
-            // Image Preview or Processing
+            // Processing Card - Only show when processing
             Obx(() {
               if (controller.isProcessingImage.value) {
                 return _buildProcessingCard();
-              } else if (controller.selectedImage.value != null) {
-                return _buildImagePreview(controller);
               }
               return const SizedBox.shrink();
             }),
 
-            // Transaction Form
+            // Transaction Form - Show for manual entry OR after image processing
             Obx(() {
-              if (controller.selectedImage.value != null ||
-                  controller.isManualEntry.value) {
+              if (controller.isManualEntry.value ||
+                  controller.isImageProcessed.value) {
                 return _buildTransactionForm(controller);
               }
               return const SizedBox.shrink();
@@ -115,15 +115,16 @@ class AddTransactionView extends StatelessWidget {
         ),
       ),
       bottomNavigationBar: Obx(() {
-        if (controller.selectedImage.value != null ||
-            controller.isManualEntry.value) {
+        // Show bottom button only when form is visible
+        if ((controller.isManualEntry.value || controller.isImageProcessed.value) &&
+            !controller.isProcessingImage.value) {
           return Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: Colors.white,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
+                  color: Colors.black.withOpacity(0.05),
                   blurRadius: 10,
                   offset: const Offset(0, -5),
                 ),
@@ -131,7 +132,9 @@ class AddTransactionView extends StatelessWidget {
             ),
             child: SafeArea(
               child: ElevatedButton(
-                onPressed: controller.submitTransaction,
+                onPressed: controller.isSubmitting.value 
+                    ? null 
+                    : controller.submitTransaction,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF4D7FFF),
                   padding: const EdgeInsets.symmetric(vertical: 16),
@@ -139,15 +142,25 @@ class AddTransactionView extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   elevation: 0,
+                  disabledBackgroundColor: const Color(0xFF4D7FFF).withOpacity(0.6),
                 ),
-                child: const Text(
-                  'Add Transaction',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
+                child: controller.isSubmitting.value
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      )
+                    : const Text(
+                        'Add Transaction',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
               ),
             ),
           );
@@ -182,8 +195,8 @@ class AddTransactionView extends StatelessWidget {
             boxShadow: [
               BoxShadow(
                 color: isSelected
-                    ? color.withValues(alpha: 0.2)
-                    : Colors.black.withValues(alpha: 0.05),
+                    ? color.withOpacity(0.2)
+                    : Colors.black.withOpacity(0.05),
                 blurRadius: isSelected ? 15 : 10,
                 offset: const Offset(0, 4),
               ),
@@ -195,7 +208,7 @@ class AddTransactionView extends StatelessWidget {
                 width: 56,
                 height: 56,
                 decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.1),
+                  color: color.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(icon, color: color, size: 28),
@@ -253,7 +266,7 @@ class AddTransactionView extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withOpacity(0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -286,77 +299,6 @@ class AddTransactionView extends StatelessWidget {
     );
   }
 
-  Widget _buildImagePreview(AddTransactionViewModel controller) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Stack(
-            children: [
-              ClipRRect(
-                borderRadius:
-                    const BorderRadius.vertical(top: Radius.circular(16)),
-                child: Image.file(
-                  controller.selectedImage.value!,
-                  height: 200,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                ),
-              ),
-              Positioned(
-                top: 8,
-                right: 8,
-                child: GestureDetector(
-                  onTap: controller.removeImage,
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.6),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.close,
-                      color: Colors.white,
-                      size: 20,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Row(
-              children: [
-                const Icon(Icons.check_circle, color: Colors.green, size: 20),
-                const SizedBox(width: 8),
-                Text(
-                  'Bill scanned successfully',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.grey[700],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildTransactionForm(AddTransactionViewModel controller) {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -365,7 +307,7 @@ class AddTransactionView extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withOpacity(0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -440,7 +382,7 @@ class AddTransactionView extends StatelessWidget {
 
           // Category Dropdown
           Obx(() => DropdownButtonFormField<String>(
-                initialValue: controller.selectedCategory.value,
+                value: controller.selectedCategory.value,
                 decoration: InputDecoration(
                   labelText: 'Category',
                   prefixIcon: const Icon(Icons.category_outlined),
@@ -534,7 +476,7 @@ class AddTransactionView extends StatelessWidget {
               leading: Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF4D7FFF).withValues(alpha: 0.1),
+                  color: const Color(0xFF4D7FFF).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(Icons.camera_alt, color: Color(0xFF4D7FFF)),
@@ -550,7 +492,7 @@ class AddTransactionView extends StatelessWidget {
               leading: Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF4D7FFF).withValues(alpha: 0.1),
+                  color: const Color(0xFF4D7FFF).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child:

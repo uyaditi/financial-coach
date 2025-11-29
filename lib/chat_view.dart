@@ -3,8 +3,13 @@ import 'package:flutter/material.dart';
 
 class ChatScreen extends StatefulWidget {
   final String? initialMessage;
+  final bool isFromVoice; // NEW: Track if initial message is from voice
   
-  const ChatScreen({super.key, this.initialMessage});
+  const ChatScreen({
+    super.key, 
+    this.initialMessage,
+    this.isFromVoice = false,
+  });
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -17,19 +22,20 @@ class _ChatScreenState extends State<ChatScreen> {
   bool _isProcessing = false;
 
   @override
-  void initState() {
-    super.initState();
-    if (widget.initialMessage != null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _sendMessage(widget.initialMessage!);
-      });
-    }
+void initState() {
+  super.initState();
+  if (widget.initialMessage != null) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _sendMessage(widget.initialMessage!, isFromVoice: widget.isFromVoice);
+    });
   }
+}
 
   @override
   void dispose() {
     _scrollController.dispose();
     _messageController.dispose();
+    _viewModel.dispose();
     super.dispose();
   }
 
@@ -58,7 +64,10 @@ class _ChatScreenState extends State<ChatScreen> {
       elevation: 0,
       leading: IconButton(
         icon: const Icon(Icons.arrow_back, color: Color(0xFF1A1D29)),
-        onPressed: () => Navigator.pop(context),
+        onPressed: () {
+          _viewModel.stopSpeaking();
+          Navigator.pop(context);
+        },
       ),
       title: Row(
         children: [
@@ -75,6 +84,11 @@ class _ChatScreenState extends State<ChatScreen> {
         ],
       ),
       actions: [
+        if (_viewModel.isSpeaking)
+          IconButton(
+            icon: const Icon(Icons.stop_circle, color: Colors.red),
+            onPressed: () => setState(() => _viewModel.stopSpeaking()),
+          ),
         IconButton(
           icon: const Icon(Icons.refresh, color: Color(0xFF6B7280)),
           onPressed: () => setState(() => _viewModel.clearChat()),
@@ -198,6 +212,54 @@ class _ChatScreenState extends State<ChatScreen> {
                       height: 1.5,
                     ),
                   ),
+                  // Show read aloud button for bot messages
+                  if (!m.isUser) ...[
+                    const SizedBox(height: 8),
+                    InkWell(
+                      onTap: () {
+                        setState(() {
+                          if (_viewModel.isSpeaking) {
+                            _viewModel.stopSpeaking();
+                          } else {
+                            _viewModel.speak(m.message);
+                          }
+                        });
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: _viewModel.isSpeaking 
+                            ? Colors.red.withValues(alpha: 0.1)
+                            : const Color(0xFF8B5CF6).withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: _viewModel.isSpeaking 
+                              ? Colors.red.withValues(alpha: 0.3)
+                              : const Color(0xFF8B5CF6).withValues(alpha: 0.3)
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              _viewModel.isSpeaking ? Icons.stop : Icons.volume_up, 
+                              size: 14,
+                              color: _viewModel.isSpeaking ? Colors.red : const Color(0xFF8B5CF6),
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              _viewModel.isSpeaking ? 'Stop' : 'Read Aloud',
+                              style: TextStyle(
+                                color: _viewModel.isSpeaking ? Colors.red : const Color(0xFF8B5CF6),
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                   if (!m.isUser && m.suggestions != null && m.suggestions!.isNotEmpty) ...[
                     const SizedBox(height: 12),
                     Wrap(
@@ -229,7 +291,11 @@ class _ChatScreenState extends State<ChatScreen> {
                 color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(Icons.person, color: Color(0xFF3B82F6), size: 18),
+              child: Icon(
+                m.isFromVoice ? Icons.mic : Icons.person,
+                color: const Color(0xFF3B82F6),
+                size: 18,
+              ),
             ),
           ],
         ],
@@ -328,11 +394,11 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  void _sendMessage(String msg) {
+  void _sendMessage(String msg, {bool isFromVoice = false}) {
     if (msg.trim().isEmpty) return;
     
     setState(() {
-      _viewModel.addUserMessage(msg);
+      _viewModel.addUserMessage(msg, isFromVoice: isFromVoice);
       _isProcessing = true;
       _messageController.clear();
     });
@@ -347,10 +413,10 @@ class _ChatScreenState extends State<ChatScreen> {
       }
     });
 
-    Future.delayed(const Duration(seconds: 2), () {
+    // Call API and get response
+    _viewModel.generateAIResponse(msg, isFromVoice: isFromVoice).then((_) {
       if (mounted) {
         setState(() {
-          _viewModel.generateAIResponse(msg);
           _isProcessing = false;
         });
 

@@ -1,4 +1,7 @@
+import 'package:ezmoney/ble_view.dart';
 import 'package:ezmoney/budget_view.dart';
+import 'package:ezmoney/loan.dart';
+import 'package:ezmoney/payments_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -22,7 +25,8 @@ class MenuScreen extends StatelessWidget {
                   CircleAvatar(
                     radius: 30,
                     backgroundColor: Colors.white,
-                    child: Icon(Icons.person, size: 35, color: Colors.blue[700]),
+                    child:
+                        Icon(Icons.person, size: 35, color: Colors.blue[700]),
                   ),
                   const SizedBox(width: 16),
                   const Column(
@@ -36,7 +40,7 @@ class MenuScreen extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        'User Name',
+                        'Aryan Surve',
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 20,
@@ -78,20 +82,19 @@ class MenuScreen extends StatelessWidget {
               ),
               _buildMenuItem(
                 icon: Icons.receipt_long,
-                title: 'Transactions',
+                title: 'BLE',
                 onTap: () {
-                  // Navigate to Transactions
-                  Get.snackbar('Info', 'Transactions screen coming soon',
-                      snackPosition: SnackPosition.BOTTOM);
+                  Get.to(() => const BLETransferView(),
+                      transition: Transition.rightToLeft);
                 },
               ),
               _buildMenuItem(
                 icon: Icons.flag,
-                title: 'Goals',
+                title: 'Payments',
                 onTap: () {
                   // Navigate to Goals
-                  Get.snackbar('Info', 'Goals screen coming soon',
-                      snackPosition: SnackPosition.BOTTOM);
+                  Get.to(() => const PaymentScreen(),
+                      transition: Transition.rightToLeft);
                 },
               ),
               _buildMenuItem(
@@ -99,8 +102,8 @@ class MenuScreen extends StatelessWidget {
                 title: 'Loans',
                 onTap: () {
                   // Navigate to Loans
-                  Get.snackbar('Info', 'Loans screen coming soon',
-                      snackPosition: SnackPosition.BOTTOM);
+                  Get.to(() => const LoanScreen(),
+                      transition: Transition.rightToLeft);
                 },
               ),
               _buildMenuItem(

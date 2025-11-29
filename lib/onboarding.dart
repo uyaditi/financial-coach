@@ -839,51 +839,51 @@ class OnboardingView extends StatelessWidget {
           const SizedBox(height: 24),
 
           // Language Selection
-          const Text(
-            'Select Language',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF1F2937),
-            ),
-          ),
-          const SizedBox(height: 12),
-          Obx(() => Wrap(
-                spacing: 10,
-                runSpacing: 10,
-                children: controller.languages.map((language) {
-                  final isSelected =
-                      controller.selectedLanguage.value == language;
-                  return GestureDetector(
-                    onTap: () => controller.selectedLanguage.value = language,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 12),
-                      decoration: BoxDecoration(
-                        color: isSelected ? page.primaryColor : Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: isSelected
-                              ? page.primaryColor
-                              : const Color(0xFFE5E7EB),
-                          width: 1.5,
-                        ),
-                      ),
-                      child: Text(
-                        language,
-                        style: TextStyle(
-                          color: isSelected
-                              ? Colors.white
-                              : const Color(0xFF6B7280),
-                          fontWeight:
-                              isSelected ? FontWeight.w600 : FontWeight.normal,
-                        ),
-                      ),
-                    ),
-                  );
-                }).toList(),
-              )),
-          const SizedBox(height: 24),
+          // const Text(
+          //   'Select Language',
+          //   style: TextStyle(
+          //     fontSize: 16,
+          //     fontWeight: FontWeight.w600,
+          //     color: Color(0xFF1F2937),
+          //   ),
+          // ),
+          // const SizedBox(height: 12),
+          // Obx(() => Wrap(
+          //       spacing: 10,
+          //       runSpacing: 10,
+          //       children: controller.languages.map((language) {
+          //         final isSelected =
+          //             controller.selectedLanguage.value == language;
+          //         return GestureDetector(
+          //           onTap: () => controller.selectedLanguage.value = language,
+          //           child: Container(
+          //             padding: const EdgeInsets.symmetric(
+          //                 horizontal: 20, vertical: 12),
+          //             decoration: BoxDecoration(
+          //               color: isSelected ? page.primaryColor : Colors.white,
+          //               borderRadius: BorderRadius.circular(12),
+          //               border: Border.all(
+          //                 color: isSelected
+          //                     ? page.primaryColor
+          //                     : const Color(0xFFE5E7EB),
+          //                 width: 1.5,
+          //               ),
+          //             ),
+          //             child: Text(
+          //               language,
+          //               style: TextStyle(
+          //                 color: isSelected
+          //                     ? Colors.white
+          //                     : const Color(0xFF6B7280),
+          //                 fontWeight:
+          //                     isSelected ? FontWeight.w600 : FontWeight.normal,
+          //               ),
+          //             ),
+          //           ),
+          //         );
+          //       }).toList(),
+          //     )),
+          // const SizedBox(height: 24),
 
           // Emotion Analysis
           Container(

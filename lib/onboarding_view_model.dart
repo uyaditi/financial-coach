@@ -32,6 +32,8 @@ enum OnboardingPageType {
 
 // Controller (ViewModel)
 class OnboardingController extends GetxController {
+  static PorcupineService? porcupineService;
+
   final PageController pageController = PageController();
   final RxInt currentPage = 0.obs;
   final RxBool isLastPage = false.obs;
@@ -220,18 +222,17 @@ class OnboardingController extends GetxController {
 
 // Check and auto-enable voice on app start
   static Future<void> initializeVoiceOnAppStart() async {
-    final prefs = await SharedPreferences.getInstance();
-    final isVoiceEnabled = prefs.getBool(_voiceEnabledKey) ?? false;
+  final prefs = await SharedPreferences.getInstance();
+  final isVoiceEnabled = prefs.getBool(_voiceEnabledKey) ?? false;
 
-    if (isVoiceEnabled) {
-      final porcupineService = PorcupineService();
-      bool initialized = await porcupineService.initialize();
+  // Create and initialize the global service
+  porcupineService = PorcupineService();
+  bool initialized = await porcupineService!.initialize();
 
-      if (initialized) {
-        await porcupineService.enable();
-      }
-    }
+  if (initialized && isVoiceEnabled) {
+    await porcupineService!.enable();
   }
+}
 
 // Save voice state
   Future<void> _saveVoiceState(bool value) async {
@@ -249,8 +250,11 @@ class OnboardingController extends GetxController {
   void toggleVoiceAssistant(bool value, BuildContext context) async {
     voiceEnabled.value = value;
 
+    // Use the global service if available
+    final service = porcupineService ?? _porcupineService;
+
     if (value) {
-      bool initialized = await _porcupineService.initialize();
+      bool initialized = await service.initialize();
 
       if (!initialized) {
         voiceEnabled.value = false;
@@ -258,36 +262,14 @@ class OnboardingController extends GetxController {
         return;
       }
 
-      _porcupineService.onCommandRecognized = (command) {
-        debugPrint('Processing command: $command');
-        _processVoiceCommand(command);
-      };
-
-      await _porcupineService.enable();
-      await _saveVoiceState(true); // Save to SharedPreferences
+      await service.enable();
+      await _saveVoiceState(true);
     } else {
-      await _porcupineService.disable();
-      await _saveVoiceState(false); // Save to SharedPreferences
+      await service.disable();
+      await _saveVoiceState(false);
     }
   }
 
-// Add this method to process commands
-  void _processVoiceCommand(String command) {
-    // You can add command processing logic here
-    debugPrint('Processing command: $command');
-
-    // Example: Parse common commands
-    final lowerCommand = command.toLowerCase();
-    if (lowerCommand.contains('balance')) {
-      debugPrint('User asked about balance');
-    } else if (lowerCommand.contains('expense')) {
-      debugPrint('User asked about expenses');
-    } else if (lowerCommand.contains('budget')) {
-      debugPrint('User asked about budget');
-    }
-  }
-
-  // Validate current page before moving forward
   // Validate current page before moving forward
   bool validateCurrentPage(BuildContext context) {
     // Add BuildContext parameter

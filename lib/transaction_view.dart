@@ -29,6 +29,75 @@ class TransactionView extends StatelessWidget {
           color: const Color(0xFF4D7FFF),
           child: CustomScrollView(
             slivers: [
+              // Date Navigation Header
+              SliverToBoxAdapter(
+                child: Container(
+                  margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.04),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.chevron_left, size: 28),
+                        onPressed: controller.previousDay,
+                        color: const Color(0xFF4D7FFF),
+                      ),
+                      GestureDetector(
+                        onTap: () => _showDatePicker(context, controller),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF4D7FFF).withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.calendar_today,
+                                size: 18,
+                                color: const Color(0xFF4D7FFF),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                controller.isToday
+                                    ? 'Today'
+                                    : DateFormat('MMM dd, yyyy')
+                                        .format(controller.selectedDate.value),
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF4D7FFF),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.chevron_right, size: 28),
+                        onPressed: controller.nextDay,
+                        color: const Color(0xFF4D7FFF),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              
               // Summary Card
               SliverToBoxAdapter(
                 child: Padding(
@@ -53,9 +122,9 @@ class TransactionView extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Today\'s Activity',
-                          style: TextStyle(
+                        Text(
+                          controller.isToday ? 'Today\'s Activity' : 'Day Activity',
+                          style: const TextStyle(
                             color: Colors.white,
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
@@ -90,7 +159,7 @@ class TransactionView extends StatelessWidget {
                 ),
               ),
               
-              // Today's Transactions Header
+              // Transactions Header
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
@@ -98,7 +167,7 @@ class TransactionView extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text(
-                        'Today\'s Transactions',
+                        'Transactions',
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
@@ -106,7 +175,7 @@ class TransactionView extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        DateFormat('MMM dd, yyyy').format(DateTime.now()),
+                        '${controller.todayTransactions.length} items',
                         style: const TextStyle(
                           fontSize: 14,
                           color: Colors.black45,
@@ -131,7 +200,9 @@ class TransactionView extends StatelessWidget {
                             ),
                             const SizedBox(height: 16),
                             Text(
-                              'No transactions today',
+                              controller.isToday
+                                  ? 'No transactions today'
+                                  : 'No transactions on this date',
                               style: TextStyle(
                                 fontSize: 16,
                                 color: Colors.grey[600],
@@ -166,7 +237,7 @@ class TransactionView extends StatelessWidget {
         );
       }),
       floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 70), // Add padding to lift above bottom nav
+        padding: const EdgeInsets.only(bottom: 70),
         child: FloatingActionButton.extended(
           onPressed: () {
             Get.to(() => const AddTransactionView());
@@ -184,6 +255,32 @@ class TransactionView extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void _showDatePicker(BuildContext context, TransactionViewModel controller) {
+    showDatePicker(
+      context: context,
+      initialDate: controller.selectedDate.value,
+      firstDate: DateTime(2020),
+      lastDate: DateTime.now(),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: Color(0xFF4D7FFF),
+              onPrimary: Colors.white,
+              surface: Colors.white,
+              onSurface: Colors.black,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    ).then((date) {
+      if (date != null) {
+        controller.changeDate(date);
+      }
+    });
   }
 
   Widget _buildSummaryItem(String label, String amount, IconData icon, Color color) {
@@ -279,6 +376,8 @@ class TransactionView extends StatelessWidget {
                       fontWeight: FontWeight.w600,
                       color: Colors.black87,
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
                   Row(

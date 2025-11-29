@@ -197,19 +197,94 @@ class BudgetViewModel extends GetxController {
     }
   }
 
-  // Future method for POST request (commented out until API is ready)
-  /*
-  Future<void> addBudget({
+  void _showSuccessMessage(BuildContext context, String message) {
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.check_circle, color: Colors.white),
+            const SizedBox(width: 12),
+            Expanded(child: Text(message)),
+          ],
+        ),
+        backgroundColor: Colors.green,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(16),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  void _showErrorMessage(BuildContext context, String message) {
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.error_outline, color: Colors.white),
+            const SizedBox(width: 12),
+            Expanded(child: Text(message)),
+          ],
+        ),
+        backgroundColor: Colors.red,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(16),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
+  // Smart method: Add if category doesn't exist for the month, Update if it does
+  Future<void> addOrUpdateBudget({
+    required BuildContext context,
     required String category,
     required double maxLimit,
+  }) async {
+    // Check if budget already exists for this category in the selected month
+    final existingBudget = currentMonthBudgets.firstWhereOrNull(
+      (b) => b.category.toLowerCase() == category.toLowerCase(),
+    );
+
+    if (existingBudget != null) {
+      // Budget exists, update it
+      await updateBudget(
+        context: context,
+        category: category,
+        maxLimit: maxLimit,
+      );
+    } else {
+      // Budget doesn't exist, add new
+      await addBudget(
+        context: context,
+        category: category,
+        maxLimit: maxLimit,
+      );
+    }
+  }
+
+  Future<void> addBudget({
+    required BuildContext context,
+    required String category,
+    required double maxLimit,
+    int userId = 1, // Default user_id, make this dynamic based on your auth
   }) async {
     final monthStr = DateFormat('yyyy-MM').format(selectedMonth.value);
 
     try {
+      debugPrint('Sending request with time_period: $monthStr');
+      
       final response = await http.post(
         Uri.parse('https://ez-8f2y.onrender.com/budgets/'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
+          'user_id': userId,
           'category': category,
           'max_limit': maxLimit,
           'time_period': monthStr,
@@ -221,82 +296,60 @@ class BudgetViewModel extends GetxController {
         },
       );
 
+      debugPrint('Add Budget Response: ${response.statusCode}');
+      debugPrint('Add Budget Response Body: ${response.body}');
+
       if (response.statusCode == 200 || response.statusCode == 201) {
-        Get.snackbar(
-          'Success',
-          'Budget added successfully',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
-          duration: const Duration(seconds: 3),
-          margin: const EdgeInsets.all(16),
-        );
+        // Parse response to check what was actually saved
+        final responseData = json.decode(response.body);
+        final savedTimePeriod = responseData['time_period'];
+        debugPrint('Saved time_period: $savedTimePeriod vs Expected: $monthStr');
+        
         await fetchBudgets();
+        calculateTotalBudget();
+        
+        if (context.mounted) {
+          _showSuccessMessage(context, 'Budget added successfully');
+        }
       } else {
-        Get.snackbar(
-          'Error',
-          'Failed to add budget: ${response.statusCode}',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-          duration: const Duration(seconds: 3),
-          margin: const EdgeInsets.all(16),
-        );
+        if (context.mounted) {
+          _showErrorMessage(
+            context,
+            'Failed to add budget: ${response.statusCode}',
+          );
+        }
       }
     } on SocketException catch (e) {
       debugPrint('Socket error: $e');
-      Get.snackbar(
-        'Connection Error',
-        'Please check your internet connection',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-        duration: const Duration(seconds: 3),
-        margin: const EdgeInsets.all(16),
-      );
+      if (context.mounted) {
+        _showErrorMessage(context, 'Please check your internet connection');
+      }
     } on TimeoutException catch (e) {
       debugPrint('Timeout error: $e');
-      Get.snackbar(
-        'Timeout',
-        'Server is taking too long to respond',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-        duration: const Duration(seconds: 3),
-        margin: const EdgeInsets.all(16),
-      );
+      if (context.mounted) {
+        _showErrorMessage(context, 'Server is taking too long to respond');
+      }
     } catch (e) {
       debugPrint('Error adding budget: $e');
-      Get.snackbar(
-        'Error',
-        'Failed to add budget',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-        duration: const Duration(seconds: 3),
-        margin: const EdgeInsets.all(16),
-      );
+      if (context.mounted) {
+        _showErrorMessage(context, 'Failed to add budget');
+      }
     }
   }
-  */
 
-  // Method to update an existing budget (commented out until API is ready)
-  /*
   Future<void> updateBudget({
-    required int id,
+    required BuildContext context,
     required String category,
     required double maxLimit,
   }) async {
-    final monthStr = DateFormat('yyyy-MM').format(selectedMonth.value);
-
     try {
+      // API uses category in URL path
       final response = await http.put(
-        Uri.parse('https://ez-8f2y.onrender.com/budgets/$id'),
+        Uri.parse('https://ez-8f2y.onrender.com/budgets/$category'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'category': category,
           'max_limit': maxLimit,
-          'time_period': monthStr,
         }),
       ).timeout(
         const Duration(seconds: 10),
@@ -305,62 +358,39 @@ class BudgetViewModel extends GetxController {
         },
       );
 
+      debugPrint('Update Budget Response: ${response.statusCode}');
+      debugPrint('Update Budget Body: ${response.body}');
+
       if (response.statusCode == 200) {
-        Get.snackbar(
-          'Success',
-          'Budget updated successfully',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
-          duration: const Duration(seconds: 3),
-          margin: const EdgeInsets.all(16),
-        );
         await fetchBudgets();
+        calculateTotalBudget();
+        
+        if (context.mounted) {
+          _showSuccessMessage(context, 'Budget updated successfully');
+        }
       } else {
-        Get.snackbar(
-          'Error',
-          'Failed to update budget: ${response.statusCode}',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-          duration: const Duration(seconds: 3),
-          margin: const EdgeInsets.all(16),
-        );
+        if (context.mounted) {
+          _showErrorMessage(
+            context,
+            'Failed to update budget: ${response.statusCode}',
+          );
+        }
       }
     } on SocketException catch (e) {
       debugPrint('Socket error: $e');
-      Get.snackbar(
-        'Connection Error',
-        'Please check your internet connection',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-        duration: const Duration(seconds: 3),
-        margin: const EdgeInsets.all(16),
-      );
+      if (context.mounted) {
+        _showErrorMessage(context, 'Please check your internet connection');
+      }
     } on TimeoutException catch (e) {
       debugPrint('Timeout error: $e');
-      Get.snackbar(
-        'Timeout',
-        'Server is taking too long to respond',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-        duration: const Duration(seconds: 3),
-        margin: const EdgeInsets.all(16),
-      );
+      if (context.mounted) {
+        _showErrorMessage(context, 'Server is taking too long to respond');
+      }
     } catch (e) {
       debugPrint('Error updating budget: $e');
-      Get.snackbar(
-        'Error',
-        'Failed to update budget',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-        duration: const Duration(seconds: 3),
-        margin: const EdgeInsets.all(16),
-      );
+      if (context.mounted) {
+        _showErrorMessage(context, 'Failed to update budget');
+      }
     }
   }
-  */
 }
