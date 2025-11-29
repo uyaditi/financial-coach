@@ -1,10 +1,10 @@
-from services.budget_services import (
-    create_budget,
-    get_budgets,
-    update_budget_limit
-)
 from mcp.agents.base_agent import BaseAgent
 from datetime import datetime
+from mcp.tools.budget_tools import (
+    create_budget_tool,
+    get_budgets_tool,
+    update_budget_tool
+)
 
 class BudgetAgent(BaseAgent):
     def __init__(self):
@@ -17,24 +17,28 @@ class BudgetAgent(BaseAgent):
         params = state["params"]
 
         if intent == "set_budget":
-            # map intent output → create_budget inputs
-            return create_budget(
-                user_id=1,                   # <- FIX: you must supply a user id
-                category = params["category"] if params["category"] else "miscellaneous",
-                max_limit=params["amount"],      
-                time_period=datetime.now().strftime("%Y-%m"),
-            )
+            if intent == "set_budget":
+                return {
+                    "result": create_budget_tool(
+                        user_id=1,
+                        category=params.get("category") or "miscellaneous",
+                        max_limit=params.get("amount")
+                    )
+                }
 
         elif intent in ["get_budgets", "show_budgets", "list_budgets", "what are my budgets"]:
-            budgets = get_budgets(user_id=1)
-            return {"result": budgets}
+            return {
+                "result": get_budgets_tool(user_id=1)
+            }
 
         elif intent == "update_budget":
-
-            return update_budget_limit(
-                category=params["category"] or "miscellaneous",
-                amount=params["amount"]
-            )
+            return {
+                "result": update_budget_tool(
+                    user_id=1,
+                    category=params.get("category") or "miscellaneous",
+                    amount=params.get("amount")
+                )
+            }
 
         else:
             return {"error": "Unknown budget intent"}

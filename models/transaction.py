@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, Float, String, ForeignKey, DateTime, Boolean
+from sqlalchemy import Column, Integer, Float, String, ForeignKey, DateTime, Boolean, UniqueConstraint
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from config.database import Base
@@ -17,3 +17,5 @@ class Transaction(Base):
     payee = Column(String)
 
     user = relationship("User", back_populates="transactions")
+
+    
