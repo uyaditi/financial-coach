@@ -1,9 +1,9 @@
 # 📌 ezMoney — Financial Coach (INIT 0, Mumbai Hacks 2025)
 
 ## 🎥 Demo & Documentation
-[![Watch Demo](https://img.shields.io/badge/YouTube-Demo-red?style=for-the-badge&logo=youtube)](YOUR_YOUTUBE_LINK_HERE)
+[![Watch Demo](https://img.shields.io/badge/YouTube-Demo-red?style=for-the-badge&logo=youtube)](https://youtu.be/YH3d1Kon-gc)
 
-[![Read More](https://img.shields.io/badge/Notion-Documentation-black?style=for-the-badge&logo=notion)](YOUR_NOTION_LINK_HERE)
+[![Read More](https://img.shields.io/badge/Notion-Documentation-black?style=for-the-badge&logo=notion)](https://www.notion.so/Mumbai-Hacks-2025-init-0-2bae7f35325980d19746ed1f863c11f8?showMoveTo=true)
 
 ## 📸 Screenshots
 
@@ -13,30 +13,23 @@
     <td><img src="images/WhatsApp%20Image%202025-11-29%20at%2011.29.47%20(2).jpeg" width="200"></td>
     <td><img src="images/WhatsApp%20Image%202025-11-29%20at%2011.29.47.jpeg" width="200"></td>
     <td><img src="images/WhatsApp%20Image%202025-11-29%20at%2011.29.48%20(1).jpeg" width="200"></td>
-  </tr>
-  <tr>
     <td><img src="images/WhatsApp%20Image%202025-11-29%20at%2011.29.48%20(2).jpeg" width="200"></td>
     <td><img src="images/WhatsApp%20Image%202025-11-29%20at%2011.29.48.jpeg" width="200"></td>
-    <td><img src="images/WhatsApp%20Image%202025-11-29%20at%2011.29.49%20(1).jpeg" width="200"></td>
-    <td><img src="images/WhatsApp%20Image%202025-11-29%20at%2011.29.49.jpeg" width="200"></td>
   </tr>
   <tr>
     <td><img src="images/WhatsApp%20Image%202025-11-29%20at%2011.29.50%20(1).jpeg" width="200"></td>
     <td><img src="images/WhatsApp%20Image%202025-11-29%20at%2011.29.50%20(2).jpeg" width="200"></td>
     <td><img src="images/WhatsApp%20Image%202025-11-29%20at%2011.29.50.jpeg" width="200"></td>
     <td><img src="images/WhatsApp%20Image%202025-11-29%20at%2011.29.51%20(1).jpeg" width="200"></td>
+    <td><img src="images/WhatsApp%20Image%202025-11-29%20at%2011.29.49%20(1).jpeg" width="200"></td>
+    <td><img src="images/WhatsApp%20Image%202025-11-29%20at%2011.29.49.jpeg" width="200"></td>
   </tr>
   <tr>
+    <td><img src="images/WhatsApp%20Image%202025-11-29%20at%2011.33.40.jpeg" width="200"></td>
     <td><img src="images/WhatsApp%20Image%202025-11-29%20at%2011.29.51%20(2).jpeg" width="200"></td>
     <td><img src="images/WhatsApp%20Image%202025-11-29%20at%2011.29.51%20(3).jpeg" width="200"></td>
     <td><img src="images/WhatsApp%20Image%202025-11-29%20at%2011.29.51.jpeg" width="200"></td>
     <td><img src="images/WhatsApp%20Image%202025-11-29%20at%2011.29.52.jpeg" width="200"></td>
-  </tr>
-  <tr>
-    <td><img src="images/WhatsApp%20Image%202025-11-29%20at%2011.33.40.jpeg" width="200"></td>
-    <td></td>
-    <td></td>
-    <td></td>
   </tr>
 </table>
 
