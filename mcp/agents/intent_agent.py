@@ -122,7 +122,10 @@ class IntentAgent:
             entities = {
                 "amount": parsed.amount,
                 "category": category,
-                "time_period": time_period
+                "payee": parsed.payee,
+                "time_period": time_period,
+                "raw_description": text,
+                "is_recurring": False
             }
 
             return (

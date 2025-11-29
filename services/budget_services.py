@@ -17,7 +17,12 @@ def create_budget(user_id: int, category: str, max_limit: float, time_period: st
         db.commit()
         db.refresh(budget)
         print("[DEBUG] budget created:", budget)
-        return {"status": "success", "budget": budget.id}
+        return {
+            "id": budget.id,
+            "category": budget.category,
+            "max_limit": budget.max_limit,
+            "time_period": budget.time_period
+        }
     except Exception as e:
         print("[DEBUG] error creating budget:", e)
         db.rollback()
@@ -43,7 +48,7 @@ def get_budgets(user_id: int = 1):
         db.close()
 
 
-def update_budget_limit(category: str, amount: float):
+def update_budget_limit(user_id: int, category: str, amount: float, time_period: str):
     db = SessionLocal()
     try:
         budget = db.query(Budget).filter(
@@ -56,7 +61,12 @@ def update_budget_limit(category: str, amount: float):
 
         budget.max_limit = amount
         db.commit()
-        return {"status": "success", "new_spend": budget.max_limit}
+        return {
+            "id": budget.id,
+            "category": budget.category,
+            "max_limit": budget.max_limit,
+            "time_period": budget.time_period
+        }
     except Exception as e:
         db.rollback()
         return {"status": "error", "message": str(e)}

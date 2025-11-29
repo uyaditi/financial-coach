@@ -1,9 +1,10 @@
-from services.transaction_services import {
+from services.transaction_services import (
     create_expense,
     get_transactions, 
     delete_transaction,
-    update_transaction
-}
+    update_transaction, 
+    create_income
+)
 from mcp.agents.base_agent import BaseAgent
 from datetime import datetime
 
@@ -17,32 +18,45 @@ class TransactionAgent(BaseAgent):
         intent = state["intent"]
         params = state["params"]
 
-        if intent == "create_expense":
+        if intent == "create_expenses":
             return create_expense(
                 user_id=1,
-                type= "expense",
+                # type= "expense",
                 category = params["category"] if params["category"] else "miscellaneous",
                 amount = params["amount"],
                 payee = params["payee"],
                 raw_description = params["raw_description"],
-                timestamp = datetime.now().strftime("%Y-%m-%d"),
+                # timestamp = datetime.now().strftime("%Y-%m-%d"),
                 is_recurring = params["is_recurring"]                  
             )
 
         elif intent == "get_transactions":
-            return get_transactions()
+            result = get_transactions()
+            # print("Get transaction result: ", result)
+            return {"result": result}
 
         elif intent == "delete_transaction":
-            return delete_transaction(transaction_id=params["transaction_id"])
+            return {"result": delete_transaction(transaction_id=params["transaction_id"])}
 
         elif intent == "update_transaction":
-            return update_transaction(
+            return {"result": update_transaction(
                 transaction_id=params["transaction_id"],
                 category=params["category"],
                 amount=params["amount"],
                 raw_description=params["raw_description"],
                 is_recurring=params["is_recurring"]
-            )
+            ) }
+        elif intent == "create_income":
+            return {"result": create_income(
+                user_id=1,
+                # type= "income",
+                category = params["category"] if params["category"] else None,
+                amount = params["amount"],
+                payee = params["payee"],
+                raw_description = params["raw_description"],
+                # timestamp = datetime.now().strftime("%Y-%m-%d"),
+                is_recurring = params["is_recurring"] 
+            )}
 
         else:
             return {"error": "Unknown transaction intent"}
