@@ -1,15 +1,23 @@
 {
+    "_comment": "fallback investment for zerodha KITE",
     "user_id": 1,
     "holdings": [
-        {"tradingsymbol": "TATASTEEL", "exchange": "NSE", "quantity": 15, "average_price": 120.5, "last_price": 128.0, "pnl": 112.5},
-        {"tradingsymbol": "RELIANCE", "exchange": "NSE", "quantity": 10, "average_price": 2450.0, "last_price": 2505.0, "pnl": 550.0},
-        {"tradingsymbol": "HDFCBANK", "exchange": "NSE", "quantity": 8, "average_price": 1600.0, "last_price": 1625.0, "pnl": 200.0},
-        {"tradingsymbol": "INFY", "exchange": "NSE", "quantity": 12, "average_price": 1500.0, "last_price": 1522.0, "pnl": 264.0},
-        {"tradingsymbol": "TCS", "exchange": "NSE", "quantity": 5, "average_price": 3200.0, "last_price": 3300.0, "pnl": 500.0},
-        {"tradingsymbol": "SBIN", "exchange": "NSE", "quantity": 20, "average_price": 600.0, "last_price": 610.0, "pnl": 200.0},
-        {"tradingsymbol": "ICICIBANK", "exchange": "NSE", "quantity": 10, "average_price": 900.0, "last_price": 920.0, "pnl": 200.0},
-        {"tradingsymbol": "AXISBANK", "exchange": "NSE", "quantity": 7, "average_price": 800.0, "last_price": 815.0, "pnl": 105.0},
-        {"tradingsymbol": "BAJFINANCE", "exchange": "NSE", "quantity": 3, "average_price": 7000.0, "last_price": 7100.0, "pnl": 300.0},
-        {"tradingsymbol": "KOTAKBANK", "exchange": "NSE", "quantity": 6, "average_price": 1800.0, "last_price": 1825.0, "pnl": 150.0}
-    ]
+        {"tradingsymbol": "TATASTEEL", "exchange": "NSE", "quantity": 15, "average_price": 120.5, "last_price": 128.0, "pnl": 1350.0},
+        {"tradingsymbol": "RELIANCE", "exchange": "NSE", "quantity": 10, "average_price": 2450.0, "last_price": 2505.0, "pnl": 6600.0},
+        {"tradingsymbol": "HDFCBANK", "exchange": "NSE", "quantity": 8, "average_price": 1600.0, "last_price": 1625.0, "pnl": 2400.0},
+        {"tradingsymbol": "INFY", "exchange": "NSE", "quantity": 12, "average_price": 1500.0, "last_price": 1522.0, "pnl": 3800.0},
+        {"tradingsymbol": "TCS", "exchange": "NSE", "quantity": 5, "average_price": 3200.0, "last_price": 3300.0, "pnl": 6000.0},
+        {"tradingsymbol": "SBIN", "exchange": "NSE", "quantity": 20, "average_price": 600.0, "last_price": 610.0, "pnl": 2400.0},
+        {"tradingsymbol": "ICICIBANK", "exchange": "NSE", "quantity": 10, "average_price": 900.0, "last_price": 920.0, "pnl": 2400.0},
+        {"tradingsymbol": "AXISBANK", "exchange": "NSE", "quantity": 7, "average_price": 800.0, "last_price": 815.0, "pnl": 1260.0},
+        {"tradingsymbol": "BAJFINANCE", "exchange": "NSE", "quantity": 3, "average_price": 7000.0, "last_price": 7100.0, "pnl": 3600.0},
+        {"tradingsymbol": "KOTAKBANK", "exchange": "NSE", "quantity": 6, "average_price": 1800.0, "last_price": 1825.0, "pnl": 1800.0},
+        {"tradingsymbol": "BTC", "exchange": "Crypto", "quantity": 0.04, "average_price": 3000000.0, "last_price": 3200000.0, "pnl": 80000.0},
+        {"tradingsymbol": "ETH", "exchange": "Crypto", "quantity": 0.4, "average_price": 200000.0, "last_price": 210000.0, "pnl": 4000.0},
+        {"tradingsymbol": "DOGE", "exchange": "Crypto", "quantity": 600, "average_price": 5.0, "last_price": 5.5, "pnl": 300.0}
+    ],
+    "rebalanced": {
+        "crypto": 35,
+        "stocks": 65
+    }
 }
