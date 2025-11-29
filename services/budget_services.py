@@ -32,6 +32,7 @@ def get_budgets(user_id: int = 1):
         budgets = db.query(Budget).filter(Budget.user_id == user_id).all()
         return [
             {
+                "id": b.id,
                 "category": b.category,
                 "max_limit": b.max_limit,
                 "time_period": b.time_period
@@ -56,6 +57,7 @@ def update_budget_limit(user_id: int, category: str, amount: float, time_period:
         budget.max_limit = amount
         db.commit()
         return {
+            "id": budget.id,
             "category": budget.category,
             "max_limit": budget.max_limit,
             "time_period": budget.time_period

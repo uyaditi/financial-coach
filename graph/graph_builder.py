@@ -38,8 +38,14 @@ def route_intent(state: GraphState):
         return {"next": "investment"}
     elif intent in ["get_expenses", "create_expenses", "update_expenses", "delete_expenses", "create_income", "update_income", "delete_income", "get_income", "get_transactions"]:
         return {"next": "transactions"}
+    # elif intent in [
+    #     "get_debts", "create_debt", "update_debt", "delete_debt",
+    #     "loan_details", "emi_details", "emi_status", "missed_emis",
+    #     "debt_summary", "creditworthiness", "repayment_strategy"
+    # ]:
+    #     return {"next": "debts"}
     else:
-        return {"next": "unknown"}  # fallback
+        return {"next": "unknown"} 
 
 
 def build_graph():
@@ -49,13 +55,16 @@ def build_graph():
     intents = [
         "set_budget", "update_budget", "get_budgets", "remaining_budger","show_budgets", "list_budgets", "what_are_my_budgets", "send_money", "check_balance", "portfolio_value", "stock_pnl",
         "portfolio_strategy", "portfolio_advice", "portfolio_rebalancing", "portfolio_review", "portfolio_optimize", 
-        "get_transactions", "create_expenses", "update_expenses", "delete_expenses", "create_income", "update_income", "delete_income"
+        "get_transactions", "create_expenses", "update_expenses", "delete_expenses", "create_income", "update_income", "delete_income", "get_debts", "create_debt", "update_debt", "delete_debt",
+        "loan_details", "emi_details", "missed_emis",
+        "debt_summary", "creditworthiness", "repayment_strategy",
     ]
     intent_agent = IntentAgent(intents=intents)
     budget_agent = BudgetAgent()
     payment_agent = PaymentAgent()
     investment_agent = InvestmentAgent()
     transaction_agent = TransactionAgent()
+    # debt_agent = DebtAgent()
 
     def intent_node(state: GraphState):
         intent, entities, conf = intent_agent.classify(state["input"])

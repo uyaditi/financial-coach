@@ -110,13 +110,13 @@ model = genai.GenerativeModel(MODEL)
 
 def summarize(text: str) -> str:
     """
-    Uses Gemini to rewrite tool output into a friendly AI response.
+    Uses Gemini to rewrite tool output into a friendly AI response. Dont include the direct terms. Explain them in common terms.
     """
 
     prompt = f"""
-    Rewrite the following message into a friendly financial assistant response.
+    Rewrite the following message into a friendly financial assistant response like a summary or key highlights.
     Always use the INR currency symbol (₹).
-    Do NOT add explanations, assumptions, or extra sentences.
+    Do NOT add assumptions.
 
     Message:
     {text}
