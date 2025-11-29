@@ -1,4 +1,4 @@
-from langgraph.graph import StateGraph
+from langgraph.graph import StateGraph, END
 from langgraph.graph.message import add_messages
 
 from mcp.agents.budget_agent import BudgetAgent
@@ -26,7 +26,7 @@ def create_state():
 def route_intent(state: GraphState):
     intent = state["intent"]
 
-    if intent in ["set_budget", "update_budget", "get_budgets", "remainig_budggets", "show_bidgets", "list_budgets", "what_are_my_bidgets"]:
+    if intent in ["set_budget", "update_budget", "get_budgets", "remaining_budgets", "show_budgets", "list_budgets", "what_are_my_budgets"]:
         return {"next": "budget"}
     elif intent == "send_money":
         return {"next": "payment"}
@@ -35,7 +35,7 @@ def route_intent(state: GraphState):
         "portfolio_advice", "portfolio_rebalancing", "portfolio_review"
     ]:
         return {"next": "investment"}
-    elif intent in ["get_exepenses", "create_expenses", "update_expenses", "delete_expenses", "create_income", "update_income", "delete_income", "get_income"]:
+    elif intent in ["get_expenses", "create_expenses", "update_expenses", "delete_expenses", "create_income", "update_income", "delete_income", "get_income", "get_transactions"]:
         return {"next": "transactions"}
     else:
         return {"next": "unknown"}  # fallback
@@ -48,7 +48,7 @@ def build_graph():
     intents = [
         "set_budget", "update_budget", "get_budgets", "remaining_budger","show_budgets", "list_budgets", "what_are_my_budgets", "send_money", "check_balance", "portfolio_value", "stock_pnl",
         "portfolio_strategy", "portfolio_advice", "portfolio_rebalancing", "portfolio_review", "portfolio_optimize", 
-        "get_exepenses", "create_expenses", "update_expenses", "delete_expenses", "create_income", "update_income", "delete_income", "get_income"
+        "get_transactions", "create_expenses", "update_expenses", "delete_expenses", "create_income", "update_income", "delete_income"
     ]
     intent_agent = IntentAgent(intents=intents)
     budget_agent = BudgetAgent()
@@ -109,5 +109,10 @@ def build_graph():
             "unknown": "unknown",
         }
     )
+    g.add_edge("budget", END)
+    g.add_edge("payment", END)
+    g.add_edge("investment", END)
+    g.add_edge("transactions", END)
+    g.add_edge("unknown", END)
 
     return g.compile()
