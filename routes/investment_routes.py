@@ -6,6 +6,11 @@ from services.transaction_services import create_expense
 import json
 from twilio.rest import Client
 import random
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 router = APIRouter(prefix="/investments", tags=["Investments"])
 
@@ -105,8 +110,12 @@ def send_whatsapp_message(to: str, content_sid: str) -> str:
     Returns:
         str: The SID of the sent message.
     """
-    account_sid = 'ACb0554f6cb9b8b211a6f36ee9d33e6e4c'
-    auth_token = 'aff15ce9a1b2f481b285b931794ddad7'
+    account_sid = os.getenv('TWILIO_ACCOUNT_SID')
+    auth_token = os.getenv('TWILIO_AUTH_TOKEN')
+
+    if not account_sid or not auth_token:
+        raise HTTPException(status_code=500, detail="Twilio credentials are not set in the environment variables.")
+
     client = Client(account_sid, auth_token)
 
     try:
