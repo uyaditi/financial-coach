@@ -9,10 +9,7 @@ def get_stock_investments(user_id):
     json_path = os.path.join(os.path.dirname(__file__), "investments.json")
     with open(json_path, "r") as f:
         data = json.load(f)
-    if data.get("user_id") == user_id:
-        return data
-    else:
-        return {"user_id": user_id, "holdings": []}
+    return data
     
 def portfolio_summary(investments):
     total_cost = 0
