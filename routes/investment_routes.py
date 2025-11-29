@@ -1,14 +1,9 @@
-<<<<<<< HEAD
 from fastapi import APIRouter, File, UploadFile, HTTPException, Request
-=======
-from fastapi import APIRouter, File, UploadFile, HTTPException
->>>>>>> 0a6b676c9a4430d87d91479e49324e77aa5b3c22
 from google import genai
 from google.genai import types
 from services.portfolio import get_stock_investments
 from services.transaction_services import create_expense
 import json
-<<<<<<< HEAD
 from twilio.rest import Client
 import random
 import os
@@ -16,8 +11,6 @@ from dotenv import load_dotenv
 
 # Load environment variables from .env file
 load_dotenv()
-=======
->>>>>>> 0a6b676c9a4430d87d91479e49324e77aa5b3c22
 
 router = APIRouter(prefix="/investments", tags=["Investments"])
 
